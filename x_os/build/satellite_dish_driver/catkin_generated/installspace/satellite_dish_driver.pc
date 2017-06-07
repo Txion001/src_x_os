@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/install
+
+Name: satellite_dish_driver
+Description: Description of satellite_dish_driver
+Version: 0.0.0
+Cflags: -I/home/tom/x_os/install/include
+Libs: -L/home/tom/x_os/install/lib -lsatellite_dish_driver
+Requires: gait_generation ihmc_msgs roscpp std_msgs tf2_ros trajectory_generation

@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC    -shared -Wl,-soname,libgait_generation.so -o /home/tom/x_os/devel/lib/libgait_generation.so CMakeFiles/gait_generation.dir/src/gait_generation.cpp.o 

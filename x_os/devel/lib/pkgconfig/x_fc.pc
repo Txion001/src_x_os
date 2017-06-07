@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/devel
+
+Name: x_fc
+Description: Description of x_fc
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/tom/x_os/devel/lib 
+Requires: 

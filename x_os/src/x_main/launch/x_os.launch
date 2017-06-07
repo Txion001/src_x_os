@@ -1,0 +1,7 @@
+<launch>
+
+  <group>
+    <node pkg="x_main" name="x_main" type="x_main_node"/>
+  </group>
+
+</launch>

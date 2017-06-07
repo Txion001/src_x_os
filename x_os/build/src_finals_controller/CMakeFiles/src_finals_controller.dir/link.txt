@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC    -shared -Wl,-soname,libsrc_finals_controller.so -o /home/tom/x_os/devel/lib/libsrc_finals_controller.so CMakeFiles/src_finals_controller.dir/src/src_finals_controller.cpp.o 

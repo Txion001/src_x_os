@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/devel
+
+Name: trajectory_generation
+Description: Description of trajectory_generation
+Version: 0.0.0
+Cflags: -I/home/tom/x_os/src/trajectory_generation/include
+Libs: -L/home/tom/x_os/devel/lib -ltrajectory_generation
+Requires: ihmc_msgs roscpp tf2_ros

@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/install
+
+Name: gait_generation
+Description: Description of gait_generation
+Version: 0.0.0
+Cflags: -I/home/tom/x_os/install/include
+Libs: -L/home/tom/x_os/install/lib -lgait_generation
+Requires: ihmc_msgs roscpp tf2_ros trajectory_generation

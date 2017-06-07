@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/devel
+
+Name: solar_components_driver
+Description: Description of solar_components_driver
+Version: 0.0.0
+Cflags: -I/home/tom/x_os/src/solar_components_driver/include
+Libs: -L/home/tom/x_os/devel/lib -lsolar_components_driver
+Requires: gait_generation map_scan roscpp tf2_ros trajectory_generation x_publisher

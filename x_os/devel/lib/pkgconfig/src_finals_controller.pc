@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/devel
+
+Name: src_finals_controller
+Description: Description of src_finals_controller
+Version: 0.0.0
+Cflags: -I/home/tom/x_os/src/src_finals_controller/include
+Libs: -L/home/tom/x_os/devel/lib -lsrc_finals_controller
+Requires: gait_generation ihmc_msgs map_scan path_generation roscpp tf2_ros

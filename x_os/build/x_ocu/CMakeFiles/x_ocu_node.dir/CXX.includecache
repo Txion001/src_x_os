@@ -1,0 +1,12 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/tom/x_os/src/x_ocu/src/x_ocu_node.cpp
+x_ocu/x_ocu_node.hpp
+/home/tom/x_os/src/x_ocu/src/x_ocu/x_ocu_node.hpp
+

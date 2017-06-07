@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/devel
+
+Name: map_scan
+Description: Description of map_scan
+Version: 0.0.0
+Cflags: -I/home/tom/x_os/src/map_scan/include
+Libs: -L/home/tom/x_os/devel/lib -lmap_scan
+Requires: ihmc_msgs pcl_conversions pcl_ros roscpp tf2_ros trajectory_generation

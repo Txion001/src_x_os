@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/install
+
+Name: path_generation
+Description: Description of path_generation
+Version: 0.0.0
+Cflags: -I/home/tom/x_os/install/include
+Libs: -L/home/tom/x_os/install/lib -lpath_generation
+Requires: gait_generation ihmc_msgs roscpp tf2_ros trajectory_generation

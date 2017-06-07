@@ -1,0 +1,1 @@
+set(ORDERED_PATHS "/home/tom/x_os/devel/lib;/opt/ros/indigo/lib")

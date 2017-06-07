@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/devel
+
+Name: x_publisher
+Description: Description of x_publisher
+Version: 0.0.0
+Cflags: -I/home/tom/x_os/src/x_publisher/include
+Libs: -L/home/tom/x_os/devel/lib -lx_publisher
+Requires: ihmc_msgs roscpp tf2_ros

@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/install
+
+Name: x_main
+Description: Description of x_main
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/tom/x_os/install/lib 
+Requires: 

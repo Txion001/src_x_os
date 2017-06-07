@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC    -shared -Wl,-soname,libtrajectory_generation.so -o /home/tom/x_os/devel/lib/libtrajectory_generation.so CMakeFiles/trajectory_generation.dir/src/trajectory_generation.cpp.o 

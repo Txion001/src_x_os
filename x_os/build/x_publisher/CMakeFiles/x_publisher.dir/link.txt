@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC    -shared -Wl,-soname,libx_publisher.so -o /home/tom/x_os/devel/lib/libx_publisher.so CMakeFiles/x_publisher.dir/src/x_publisher.cpp.o 

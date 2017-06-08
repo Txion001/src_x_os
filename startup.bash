@@ -7,4 +7,4 @@ ROSLISP_PACKAGE_DIRECTORIES=/home/docker/ws/x_os/devel/share/common-lisp:/home/d
 ROS_MASTER_URI=http://192.168.2.1:11311
 ROS_IP=192.168.2.10
 sleep 5s
-roslaunch -p 8001 x_main x_os.launch
+roslaunch x_main x_os.launch

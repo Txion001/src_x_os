@@ -28,8 +28,8 @@ RUN . /opt/ros/indigo/setup.sh \
  && catkin build
 
 EXPOSE 8000
-EXPOSE 8001
-ENV ROS_MASTER_URI http://127.0.0.1:8001
+EXPOSE 11311
+ENV ROS_MASTER_URI http://192.168.2.1:11311
 
 # Copy contents of workspace
 ADD x_os x_os

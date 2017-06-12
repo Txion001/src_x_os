@@ -90,6 +90,8 @@ class Gait_Generation
     createLowerBodyRotateGaitOverride(float heading);
     ihmc_msgs::FootstepDataListRosMessage
     createLowerBodyLinearGaitOverride(x_vector destination, float heading);
+    ihmc_msgs::FootstepDataListRosMessage
+    createLowerBodyLinearGaitStairOverride(x_vector destination, float heading, float step_distance);
     ihmc_msgs::WholeBodyTrajectoryRosMessage
     createUpperBodyGait(ihmc_msgs::FootstepDataListRosMessage step_list);
     ihmc_msgs::FootstepDataListRosMessage

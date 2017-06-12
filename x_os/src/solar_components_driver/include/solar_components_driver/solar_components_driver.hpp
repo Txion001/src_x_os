@@ -2,13 +2,11 @@
  * Designed by Tom Xiong
  * 
  * OBJECTIVE:
- * TO ENABLE INTERACTION WITH THE SATELLITE DISH HANDLES
- * UTILIZATION OF ALL TRAJECTORIES
+ * TO ENABLE INTERACTION WITH THE SOLAR POWER COMPONENTS
  * 
  * OWNERSHIP:
  * TEAM 1476-"XION SYSTEMS"
  * 
- * TODO: Create scanning functions for task 1, 2, 3
  * 
  */
 #ifndef _SOLAR_COMPONENTS_DRIVER_HPP
@@ -29,8 +27,6 @@ class Solar_Components_Driver
     ros::Publisher trajectoryNeckPublisher;
     ros::Publisher trajectoryRightHandPublisher;
     ros::Publisher trajectoryLeftHandPublisher;
-    ros::Subscriber dish_angle_sub;
-    ros::CallbackQueue dish_angle_sub_callback;
     
     Trajectory_Generation trajectory_generation;
     Gait_Generation gait_generation;
@@ -50,7 +46,9 @@ class Solar_Components_Driver
   public:
     Solar_Components_Driver();
     void
-    alignToPanel(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map);
+    alignToPanel(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
+    alignThePanel(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
     grabPanel(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
@@ -69,6 +67,8 @@ class Solar_Components_Driver
     plugCable(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map);
     std::vector<float>
     grabTableTrajectory(bool robot_side_arm, int step_num);
+    std::vector<float>
+    alignPanelTrajectory(bool robot_side_arm, int step_num);
     void
     returnToPath(std::vector<float> next_point);
     void
@@ -80,7 +80,7 @@ class Solar_Components_Driver
     void
     grabCable();
     void
-    resetStance();
+    resetStance(std::vector<float> next_point);
 };
 
 #endif

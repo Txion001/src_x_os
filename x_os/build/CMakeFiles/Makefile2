@@ -1075,7 +1075,7 @@ clean: trajectory_generation/CMakeFiles/tf2_msgs_generate_messages_py.dir/clean
 trajectory_generation/CMakeFiles/trajectory_generation.dir/all:
 	$(MAKE) -f trajectory_generation/CMakeFiles/trajectory_generation.dir/build.make trajectory_generation/CMakeFiles/trajectory_generation.dir/depend
 	$(MAKE) -f trajectory_generation/CMakeFiles/trajectory_generation.dir/build.make trajectory_generation/CMakeFiles/trajectory_generation.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  9
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  10
 	@echo "Built target trajectory_generation"
 .PHONY : trajectory_generation/CMakeFiles/trajectory_generation.dir/all
 
@@ -1415,7 +1415,7 @@ clean: map_scan/CMakeFiles/dynamic_reconfigure_generate_messages_py.dir/clean
 map_scan/CMakeFiles/map_scan.dir/all: trajectory_generation/CMakeFiles/trajectory_generation.dir/all
 	$(MAKE) -f map_scan/CMakeFiles/map_scan.dir/build.make map_scan/CMakeFiles/map_scan.dir/depend
 	$(MAKE) -f map_scan/CMakeFiles/map_scan.dir/build.make map_scan/CMakeFiles/map_scan.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  4
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  5
 	@echo "Built target map_scan"
 .PHONY : map_scan/CMakeFiles/map_scan.dir/all
 
@@ -1993,7 +1993,7 @@ clean: path_generation/CMakeFiles/_catkin_empty_exported_target.dir/clean
 path_generation/CMakeFiles/path_generation.dir/all:
 	$(MAKE) -f path_generation/CMakeFiles/path_generation.dir/build.make path_generation/CMakeFiles/path_generation.dir/depend
 	$(MAKE) -f path_generation/CMakeFiles/path_generation.dir/build.make path_generation/CMakeFiles/path_generation.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  5
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  6
 	@echo "Built target path_generation"
 .PHONY : path_generation/CMakeFiles/path_generation.dir/all
 
@@ -2043,7 +2043,7 @@ satellite_dish_driver/preinstall:
 satellite_dish_driver/CMakeFiles/satellite_dish_driver.dir/all:
 	$(MAKE) -f satellite_dish_driver/CMakeFiles/satellite_dish_driver.dir/build.make satellite_dish_driver/CMakeFiles/satellite_dish_driver.dir/depend
 	$(MAKE) -f satellite_dish_driver/CMakeFiles/satellite_dish_driver.dir/build.make satellite_dish_driver/CMakeFiles/satellite_dish_driver.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  6
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  7
 	@echo "Built target satellite_dish_driver"
 .PHONY : satellite_dish_driver/CMakeFiles/satellite_dish_driver.dir/all
 
@@ -2229,11 +2229,11 @@ clean: x_msgs/CMakeFiles/x_msgs_generate_messages.dir/clean
 
 # All Build rule for target.
 x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/all: trajectory_generation/CMakeFiles/std_msgs_generate_messages_cpp.dir/all
-x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/all: x_msgs/CMakeFiles/_x_msgs_generate_messages_check_deps_X_Status.dir/all
 x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/all: x_msgs/CMakeFiles/_x_msgs_generate_messages_check_deps_X_Command.dir/all
+x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/all: x_msgs/CMakeFiles/_x_msgs_generate_messages_check_deps_X_Status.dir/all
 	$(MAKE) -f x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/build.make x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/depend
 	$(MAKE) -f x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/build.make x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  11 12
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  12 13
 	@echo "Built target x_msgs_generate_messages_cpp"
 .PHONY : x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/all
 
@@ -2262,11 +2262,11 @@ clean: x_msgs/CMakeFiles/x_msgs_generate_messages_cpp.dir/clean
 
 # All Build rule for target.
 x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/all: trajectory_generation/CMakeFiles/std_msgs_generate_messages_lisp.dir/all
-x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/all: x_msgs/CMakeFiles/_x_msgs_generate_messages_check_deps_X_Status.dir/all
 x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/all: x_msgs/CMakeFiles/_x_msgs_generate_messages_check_deps_X_Command.dir/all
+x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/all: x_msgs/CMakeFiles/_x_msgs_generate_messages_check_deps_X_Status.dir/all
 	$(MAKE) -f x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/build.make x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/depend
 	$(MAKE) -f x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/build.make x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  13 14
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  14 15
 	@echo "Built target x_msgs_generate_messages_lisp"
 .PHONY : x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/all
 
@@ -2295,11 +2295,11 @@ clean: x_msgs/CMakeFiles/x_msgs_generate_messages_lisp.dir/clean
 
 # All Build rule for target.
 x_msgs/CMakeFiles/x_msgs_generate_messages_py.dir/all: trajectory_generation/CMakeFiles/std_msgs_generate_messages_py.dir/all
-x_msgs/CMakeFiles/x_msgs_generate_messages_py.dir/all: x_msgs/CMakeFiles/_x_msgs_generate_messages_check_deps_X_Status.dir/all
 x_msgs/CMakeFiles/x_msgs_generate_messages_py.dir/all: x_msgs/CMakeFiles/_x_msgs_generate_messages_check_deps_X_Command.dir/all
+x_msgs/CMakeFiles/x_msgs_generate_messages_py.dir/all: x_msgs/CMakeFiles/_x_msgs_generate_messages_check_deps_X_Status.dir/all
 	$(MAKE) -f x_msgs/CMakeFiles/x_msgs_generate_messages_py.dir/build.make x_msgs/CMakeFiles/x_msgs_generate_messages_py.dir/depend
 	$(MAKE) -f x_msgs/CMakeFiles/x_msgs_generate_messages_py.dir/build.make x_msgs/CMakeFiles/x_msgs_generate_messages_py.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  15 16 17 18
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  16 17 18 19
 	@echo "Built target x_msgs_generate_messages_py"
 .PHONY : x_msgs/CMakeFiles/x_msgs_generate_messages_py.dir/all
 
@@ -2407,7 +2407,7 @@ src_finals_controller/preinstall:
 src_finals_controller/CMakeFiles/src_finals_controller.dir/all:
 	$(MAKE) -f src_finals_controller/CMakeFiles/src_finals_controller.dir/build.make src_finals_controller/CMakeFiles/src_finals_controller.dir/depend
 	$(MAKE) -f src_finals_controller/CMakeFiles/src_finals_controller.dir/build.make src_finals_controller/CMakeFiles/src_finals_controller.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  8
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  9
 	@echo "Built target src_finals_controller"
 .PHONY : src_finals_controller/CMakeFiles/src_finals_controller.dir/all
 
@@ -2682,12 +2682,12 @@ clean: x_main/CMakeFiles/run_tests_x_main_roslaunch-check_launch.dir/clean
 x_main/CMakeFiles/x_main_node.dir/all: trajectory_generation/CMakeFiles/trajectory_generation.dir/all
 x_main/CMakeFiles/x_main_node.dir/all: gait_generation/CMakeFiles/gait_generation.dir/all
 x_main/CMakeFiles/x_main_node.dir/all: map_scan/CMakeFiles/map_scan.dir/all
-x_main/CMakeFiles/x_main_node.dir/all: path_generation/CMakeFiles/path_generation.dir/all
 x_main/CMakeFiles/x_main_node.dir/all: satellite_dish_driver/CMakeFiles/satellite_dish_driver.dir/all
+x_main/CMakeFiles/x_main_node.dir/all: path_generation/CMakeFiles/path_generation.dir/all
 x_main/CMakeFiles/x_main_node.dir/all: src_finals_controller/CMakeFiles/src_finals_controller.dir/all
 	$(MAKE) -f x_main/CMakeFiles/x_main_node.dir/build.make x_main/CMakeFiles/x_main_node.dir/depend
 	$(MAKE) -f x_main/CMakeFiles/x_main_node.dir/build.make x_main/CMakeFiles/x_main_node.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  10
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  11
 	@echo "Built target x_main_node"
 .PHONY : x_main/CMakeFiles/x_main_node.dir/all
 
@@ -2737,7 +2737,7 @@ x_ocu/preinstall:
 x_ocu/CMakeFiles/x_ocu_node.dir/all:
 	$(MAKE) -f x_ocu/CMakeFiles/x_ocu_node.dir/build.make x_ocu/CMakeFiles/x_ocu_node.dir/depend
 	$(MAKE) -f x_ocu/CMakeFiles/x_ocu_node.dir/build.make x_ocu/CMakeFiles/x_ocu_node.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  19
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  20
 	@echo "Built target x_ocu_node"
 .PHONY : x_ocu/CMakeFiles/x_ocu_node.dir/all
 
@@ -2787,12 +2787,12 @@ x_proto/preinstall:
 x_proto/CMakeFiles/x_proto_node.dir/all: trajectory_generation/CMakeFiles/trajectory_generation.dir/all
 x_proto/CMakeFiles/x_proto_node.dir/all: gait_generation/CMakeFiles/gait_generation.dir/all
 x_proto/CMakeFiles/x_proto_node.dir/all: map_scan/CMakeFiles/map_scan.dir/all
-x_proto/CMakeFiles/x_proto_node.dir/all: path_generation/CMakeFiles/path_generation.dir/all
 x_proto/CMakeFiles/x_proto_node.dir/all: satellite_dish_driver/CMakeFiles/satellite_dish_driver.dir/all
+x_proto/CMakeFiles/x_proto_node.dir/all: path_generation/CMakeFiles/path_generation.dir/all
 x_proto/CMakeFiles/x_proto_node.dir/all: src_finals_controller/CMakeFiles/src_finals_controller.dir/all
 	$(MAKE) -f x_proto/CMakeFiles/x_proto_node.dir/build.make x_proto/CMakeFiles/x_proto_node.dir/depend
 	$(MAKE) -f x_proto/CMakeFiles/x_proto_node.dir/build.make x_proto/CMakeFiles/x_proto_node.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  20
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  21
 	@echo "Built target x_proto_node"
 .PHONY : x_proto/CMakeFiles/x_proto_node.dir/all
 
@@ -2842,7 +2842,7 @@ x_publisher/preinstall:
 x_publisher/CMakeFiles/x_publisher.dir/all:
 	$(MAKE) -f x_publisher/CMakeFiles/x_publisher.dir/build.make x_publisher/CMakeFiles/x_publisher.dir/depend
 	$(MAKE) -f x_publisher/CMakeFiles/x_publisher.dir/build.make x_publisher/CMakeFiles/x_publisher.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  21
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  22
 	@echo "Built target x_publisher"
 .PHONY : x_publisher/CMakeFiles/x_publisher.dir/all
 
@@ -2871,6 +2871,56 @@ clean: x_publisher/CMakeFiles/x_publisher.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory habitat_driver
+
+# Convenience name for "all" pass in the directory.
+habitat_driver/all: habitat_driver/CMakeFiles/habitat_driver.dir/all
+.PHONY : habitat_driver/all
+
+# Convenience name for "clean" pass in the directory.
+habitat_driver/clean: habitat_driver/CMakeFiles/habitat_driver.dir/clean
+.PHONY : habitat_driver/clean
+
+# Convenience name for "preinstall" pass in the directory.
+habitat_driver/preinstall:
+.PHONY : habitat_driver/preinstall
+
+#=============================================================================
+# Target rules for target habitat_driver/CMakeFiles/habitat_driver.dir
+
+# All Build rule for target.
+habitat_driver/CMakeFiles/habitat_driver.dir/all:
+	$(MAKE) -f habitat_driver/CMakeFiles/habitat_driver.dir/build.make habitat_driver/CMakeFiles/habitat_driver.dir/depend
+	$(MAKE) -f habitat_driver/CMakeFiles/habitat_driver.dir/build.make habitat_driver/CMakeFiles/habitat_driver.dir/build
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  4
+	@echo "Built target habitat_driver"
+.PHONY : habitat_driver/CMakeFiles/habitat_driver.dir/all
+
+# Include target in all.
+all: habitat_driver/CMakeFiles/habitat_driver.dir/all
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+habitat_driver/CMakeFiles/habitat_driver.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tom/x_os/build/CMakeFiles 1
+	$(MAKE) -f CMakeFiles/Makefile2 habitat_driver/CMakeFiles/habitat_driver.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tom/x_os/build/CMakeFiles 0
+.PHONY : habitat_driver/CMakeFiles/habitat_driver.dir/rule
+
+# Convenience name for target.
+habitat_driver: habitat_driver/CMakeFiles/habitat_driver.dir/rule
+.PHONY : habitat_driver
+
+# clean rule for target.
+habitat_driver/CMakeFiles/habitat_driver.dir/clean:
+	$(MAKE) -f habitat_driver/CMakeFiles/habitat_driver.dir/build.make habitat_driver/CMakeFiles/habitat_driver.dir/clean
+.PHONY : habitat_driver/CMakeFiles/habitat_driver.dir/clean
+
+# clean rule for target.
+clean: habitat_driver/CMakeFiles/habitat_driver.dir/clean
+.PHONY : clean
+
+#=============================================================================
 # Directory level rules for directory solar_components_driver
 
 # Convenience name for "all" pass in the directory.
@@ -2892,7 +2942,7 @@ solar_components_driver/preinstall:
 solar_components_driver/CMakeFiles/solar_components_driver.dir/all:
 	$(MAKE) -f solar_components_driver/CMakeFiles/solar_components_driver.dir/build.make solar_components_driver/CMakeFiles/solar_components_driver.dir/depend
 	$(MAKE) -f solar_components_driver/CMakeFiles/solar_components_driver.dir/build.make solar_components_driver/CMakeFiles/solar_components_driver.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  7
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/x_os/build/CMakeFiles  8
 	@echo "Built target solar_components_driver"
 .PHONY : solar_components_driver/CMakeFiles/solar_components_driver.dir/all
 

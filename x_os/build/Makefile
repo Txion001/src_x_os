@@ -1203,6 +1203,19 @@ x_publisher/fast:
 .PHONY : x_publisher/fast
 
 #=============================================================================
+# Target rules for targets named habitat_driver
+
+# Build rule for target.
+habitat_driver: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 habitat_driver
+.PHONY : habitat_driver
+
+# fast build rule for target.
+habitat_driver/fast:
+	$(MAKE) -f habitat_driver/CMakeFiles/habitat_driver.dir/build.make habitat_driver/CMakeFiles/habitat_driver.dir/build
+.PHONY : habitat_driver/fast
+
+#=============================================================================
 # Target rules for targets named solar_components_driver
 
 # Build rule for target.
@@ -1309,6 +1322,7 @@ help:
 	@echo "... x_ocu_node"
 	@echo "... x_proto_node"
 	@echo "... x_publisher"
+	@echo "... habitat_driver"
 	@echo "... solar_components_driver"
 .PHONY : help
 

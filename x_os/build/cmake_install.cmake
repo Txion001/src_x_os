@@ -128,6 +128,7 @@ IF(NOT CMAKE_INSTALL_LOCAL_ONLY)
   INCLUDE("/home/tom/x_os/build/x_ocu/cmake_install.cmake")
   INCLUDE("/home/tom/x_os/build/x_proto/cmake_install.cmake")
   INCLUDE("/home/tom/x_os/build/x_publisher/cmake_install.cmake")
+  INCLUDE("/home/tom/x_os/build/habitat_driver/cmake_install.cmake")
   INCLUDE("/home/tom/x_os/build/solar_components_driver/cmake_install.cmake")
 
 ENDIF(NOT CMAKE_INSTALL_LOCAL_ONLY)

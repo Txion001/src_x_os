@@ -1,0 +1,8 @@
+prefix=/home/tom/x_os/devel
+
+Name: habitat_driver
+Description: Description of habitat_driver
+Version: 0.0.0
+Cflags: -I/home/tom/x_os/src/habitat_driver/include
+Libs: -L/home/tom/x_os/devel/lib -lhabitat_driver
+Requires: gait_generation map_scan roscpp tf2_ros trajectory_generation x_publisher

@@ -154,6 +154,7 @@ main (int argc, char** argv)
       current_status.status = 2;
       statusPublisher.publish(current_status);
       src_finals_controller.runController(&tfBuffer, 0, &statusPublisher);
+      passive_state = PASSIVE_STATE[3];
       active_state = ACTIVE_STATE[3];
     }
     else if(active_state == ACTIVE_STATE[3]) // SUCCESS MODE
@@ -182,7 +183,7 @@ activeReset()
   x_publisher.publish(gait_generation.createStanceReset().trajectory_neck_msg);
   trajectoryLeftHandPublisher.publish(gait_generation.createStanceReset().trajectory_finger_left_msg);
   trajectoryRightHandPublisher.publish(gait_generation.createStanceReset().trajectory_finger_right_msg);
-  ros::Duration(0.01).sleep(); // This sleep is necessary for Valkyrie to perform trajectories before leg movement
+  ros::Duration(0.05).sleep(); // This sleep is necessary for Valkyrie to perform trajectories before leg movement
   x_publisher.publish(gait_generation.createStanceReset().step_list_msg);
 }
 

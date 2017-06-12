@@ -3,6 +3,7 @@
 
 src_finals_controller/CMakeFiles/src_finals_controller.dir/src/src_finals_controller.cpp.o: /home/tom/x_os/devel/include/x_msgs/X_Status.h
 src_finals_controller/CMakeFiles/src_finals_controller.dir/src/src_finals_controller.cpp.o: /home/tom/x_os/src/gait_generation/include/gait_generation/gait_generation.hpp
+src_finals_controller/CMakeFiles/src_finals_controller.dir/src/src_finals_controller.cpp.o: /home/tom/x_os/src/habitat_driver/include/habitat_driver/habitat_driver.hpp
 src_finals_controller/CMakeFiles/src_finals_controller.dir/src/src_finals_controller.cpp.o: /home/tom/x_os/src/map_scan/include/map_scan/map_scan.hpp
 src_finals_controller/CMakeFiles/src_finals_controller.dir/src/src_finals_controller.cpp.o: /home/tom/x_os/src/path_generation/include/path_generation/path_generation.hpp
 src_finals_controller/CMakeFiles/src_finals_controller.dir/src/src_finals_controller.cpp.o: /home/tom/x_os/src/satellite_dish_driver/include/satellite_dish_driver/satellite_dish_driver.hpp

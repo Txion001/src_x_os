@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   path_generation
   satellite_dish_driver
   solar_components_driver
+  habitat_driver
   x_publisher
   x_msgs
 )

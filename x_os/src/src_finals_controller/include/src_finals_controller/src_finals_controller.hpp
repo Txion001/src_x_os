@@ -50,6 +50,8 @@ class Src_Finals_Controller
     void
     executeTaskTwo(tf2_ros::Buffer* tfBuffer);
     void
+    executeTaskThree(tf2_ros::Buffer* tfBuffer);
+    void
     executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher* statusPublisher);
   
   public:

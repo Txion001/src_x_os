@@ -42,6 +42,16 @@ tf2/LinearMath/Quaternion.h
 math.h
 /home/tom/x_os/src/gait_generation/include/gait_generation/math.h
 
+/home/tom/x_os/src/habitat_driver/include/habitat_driver/habitat_driver.hpp
+ros/ros.h
+/home/tom/x_os/src/habitat_driver/include/habitat_driver/ros/ros.h
+math.h
+/home/tom/x_os/src/habitat_driver/include/habitat_driver/math.h
+map_scan/map_scan.hpp
+/home/tom/x_os/src/habitat_driver/include/habitat_driver/map_scan/map_scan.hpp
+gait_generation/gait_generation.hpp
+/home/tom/x_os/src/habitat_driver/include/habitat_driver/gait_generation/gait_generation.hpp
+
 /home/tom/x_os/src/map_scan/include/map_scan/map_scan.hpp
 ros/ros.h
 /home/tom/x_os/src/map_scan/include/map_scan/ros/ros.h
@@ -127,6 +137,8 @@ satellite_dish_driver/satellite_dish_driver.hpp
 /home/tom/x_os/src/src_finals_controller/src/satellite_dish_driver/satellite_dish_driver.hpp
 solar_components_driver/solar_components_driver.hpp
 /home/tom/x_os/src/src_finals_controller/src/solar_components_driver/solar_components_driver.hpp
+habitat_driver/habitat_driver.hpp
+/home/tom/x_os/src/src_finals_controller/src/habitat_driver/habitat_driver.hpp
 tf2/buffer_core.h
 /home/tom/x_os/src/src_finals_controller/src/tf2/buffer_core.h
 tf2_ros/transform_listener.h

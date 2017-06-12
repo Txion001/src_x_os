@@ -674,15 +674,28 @@ Path_Generation::findTaskTwoPanelPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
       heading = M_PI-heading;
     }
   }
+  
+  int num_angle = round(heading / M_PI_4);
+  heading = num_angle * M_PI_4;
+  ROS_INFO("Corrected Heading: %f", heading);
+  std::vector<float> end_point(3, 0);
+  end_point[0] = -1.0;
+  end_point[1] = 0.0;
+  end_point[2] = 0.0;
+  tf2::Matrix3x3 rotation;
+  rotation.setRPY(0.0, 0.0, heading);
+  
+  task_point[0] = end_point[0]*rotation[0][0] + end_point[1]*rotation[0][1] + end_point[2]*rotation[0][2] + handle_point[0];
+  task_point[1] = end_point[0]*rotation[1][0] + end_point[1]*rotation[1][1] + end_point[2]*rotation[1][2] + handle_point[1];
+  task_point[2] = end_point[0]*rotation[2][0] + end_point[1]*rotation[2][1] + end_point[2]*rotation[2][2] + handle_point[2];
   task_point[3] = heading;
   
   ROS_INFO("XYYAW location:\t%f\t%f\t%f", task_point[0], task_point[1], task_point[3]);
   
   float handle_final_distance = sqrt(pow(fabs(handle_point[0] - center_point.x), 2.0) + pow(fabs(handle_point[1] - center_point.y), 2.0));
-  float end_final_distance = sqrt(pow(fabs(task_point[0] - center_point.x), 2.0) + pow(fabs(task_point[1] - center_point.y), 2.0));
   ROS_INFO("Final Distance: %f", handle_final_distance);
   *output = task_point;
-  if(found_panel == true && handle_final_distance < 3.0 && end_final_distance > 1.5)
+  if(found_panel == true && handle_final_distance < 3.0)
   {
     return true;
   }
@@ -715,6 +728,17 @@ Path_Generation::findTaskTwoArrayPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
   tf2Scalar roll = (left_roll+right_roll)/2;
   tf2Scalar pitch = (left_pitch+right_pitch)/2;
   tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
   
   geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
   center_point.x += right_foot_ankle.transform.translation.x;
@@ -821,6 +845,17 @@ Path_Generation::findTaskTwoArrayPointClose(pcl::PointCloud<pcl::PointXYZRGB>* m
   tf2Scalar roll = (left_roll+right_roll)/2;
   tf2Scalar pitch = (left_pitch+right_pitch)/2;
   tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
   
   geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
   center_point.x += right_foot_ankle.transform.translation.x;
@@ -874,6 +909,17 @@ Path_Generation::findTaskTwoArrayPointClose(pcl::PointCloud<pcl::PointXYZRGB>* m
   int num_angle = round(heading / M_PI_4);
   heading = num_angle * M_PI_4;
   ROS_INFO("Heading: %f", heading);
+  if(heading < -M_PI || heading > M_PI)
+  {
+    if(heading > 0)
+    {
+      heading -= 2*M_PI;
+    }
+    else
+    {
+      heading += 2*M_PI;
+    }
+  }
   
   std::vector<float> end_point(3, 0);
   end_point[0] = -0.6;
@@ -1049,8 +1095,8 @@ Path_Generation::createPathPointList(tf2_ros::Buffer* tfBuffer, std::vector<floa
   
   float current_x_checkpoint = center_point.x;
   float current_y_checkpoint = center_point.y;
-  const int obstacle_count = 18;
-  const float radius_of_zone_to_check = 0.38;
+  const int obstacle_count = 21;
+  const float radius_of_zone_to_check = 0.42;
   
   ROS_INFO("Current foot position: %f\t%f", current_x_checkpoint, current_y_checkpoint);
   
@@ -1203,7 +1249,7 @@ Path_Generation::createPathPointList(tf2_ros::Buffer* tfBuffer, std::vector<floa
                 temp_checkpoint.y_position = possible_forward_pos*possible_path_heading[1][0] + current_y_checkpoint;
                 ROS_INFO("Reached obstacle: %f\t%f", temp_checkpoint.x_position, temp_checkpoint.y_position);
                 checkpoint_list.push_back(temp_checkpoint);
-                //pcl::PointXYZRGB temp_point;
+                pcl::PointXYZRGB temp_point;
                 //temp_point.x = temp_checkpoint.x_position;
                 //temp_point.y = temp_checkpoint.y_position;
                 //temp_point.z = 0.0;
@@ -1379,9 +1425,31 @@ Path_Generation::traverseToPoint(std::vector<float> end_point, bool arms_disable
     heading = new_heading;
     total_heading += new_heading;
   }
+  if(heading < -M_PI || heading > M_PI)
+  {
+    if(heading > 0)
+    {
+      heading -= 2*M_PI;
+    }
+    else
+    {
+      heading += 2*M_PI;
+    }
+  }
+  if(total_heading < -M_PI || total_heading > M_PI)
+  {
+    if(total_heading > 0)
+    {
+      total_heading -= 2*M_PI;
+    }
+    else
+    {
+      total_heading += 2*M_PI;
+    }
+  }
   ROS_INFO("Distance: %f\tHeading: %f\tRaw Heading: %f\tTotal Heading: %f", distance, heading, new_heading, total_heading);
   
-  if(heading > 2*M_PI/3 || heading < -2*M_PI/3)
+  if(heading > 3*M_PI/3 || heading < -3*M_PI/4)
   {
     step_list_msg = gait_generation.createLowerBodyRotateGaitOverride(heading/4);
     step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/4);
@@ -1394,7 +1462,7 @@ Path_Generation::traverseToPoint(std::vector<float> end_point, bool arms_disable
     step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/3);
     step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/3);
   }
-  else if(heading > M_PI/3 || heading < -M_PI/3)
+  else if(heading > M_PI/4 || heading < -M_PI/4)
   {
     step_list_msg = gait_generation.createLowerBodyRotateGaitOverride(heading/2);
     step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/2);
@@ -1412,28 +1480,41 @@ Path_Generation::traverseToPoint(std::vector<float> end_point, bool arms_disable
   step_list_msg = gait_generation.createLowerBodyEndStepQueue(step_list_msg);
   if(end_point.size() == 4)
   {
-    ROS_INFO("Successful Rotation: %f", end_point[3]-total_heading);
-    if(end_point[3]-total_heading > 2*M_PI/3 || end_point[3]-total_heading < -2*M_PI/3)
+	float final_heading = end_point[3]-total_heading;
+    ROS_INFO("Pre Rotation: %f", final_heading);
+    if(final_heading < -M_PI || final_heading > M_PI)
     {
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading)/4);
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading)/4);
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading)/4);
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading)/4);
+      if(final_heading > 0)
+      {
+        final_heading -= 2*M_PI;
+      }
+      else
+      {
+        final_heading += 2*M_PI;
+      }
     }
-    else if((end_point[3]-total_heading) > M_PI/2 || (end_point[3]-total_heading) < -M_PI/2)
+    ROS_INFO("Successful Rotation: %f", final_heading);
+    if(final_heading > 3*M_PI/4 || final_heading < -3*M_PI/4)
     {
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading)/3);
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading)/3);
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading)/3);
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
     }
-    else if((end_point[3]-total_heading) > M_PI/3 || (end_point[3]-total_heading) < -M_PI/3)
+    else if(final_heading > M_PI/2 || final_heading < -M_PI/2)
     {
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading)/2);
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading)/2);
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/3);
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/3);
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/3);
+    }
+    else if(final_heading > M_PI/4 || final_heading < -M_PI/4)
+    {
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/2);
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/2);
     }
     else
     {
-      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[3]-total_heading));
+      step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading);
     }
   }
 
@@ -1531,8 +1612,30 @@ Path_Generation::traversePointList(std::vector<std::vector<float>> end_point, bo
         total_heading += new_heading;
       }
       ROS_INFO("Distance: %f\tHeading: %f\tRaw Heading: %f\tTotal Heading: %f", distance, heading, new_heading, total_heading);
+      if(heading < -M_PI || heading > M_PI)
+      {
+        if(heading > 0)
+        {
+          heading -= 2*M_PI;
+        }
+        else
+        {
+          heading += 2*M_PI;
+        }
+      }
+      if(total_heading < -M_PI || total_heading > M_PI)
+      {
+        if(total_heading > 0)
+        {
+          total_heading -= 2*M_PI;
+        }
+        else
+        {
+          total_heading += 2*M_PI;
+        }
+      }
       
-      if(heading > 2*M_PI/3 || heading < -2*M_PI/3)
+      if(heading > 3*M_PI/4 || heading < -3*M_PI/4)
       {
         step_list_msg = gait_generation.createLowerBodyRotateGaitOverride(heading/4);
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/4);
@@ -1545,7 +1648,7 @@ Path_Generation::traversePointList(std::vector<std::vector<float>> end_point, bo
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/3);
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/3);
       }
-      else if(heading > M_PI/3 || heading < -M_PI/3)
+      else if(heading > M_PI/4 || heading < -M_PI/4)
       {
         step_list_msg = gait_generation.createLowerBodyRotateGaitOverride(heading/2);
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/2);
@@ -1563,28 +1666,41 @@ Path_Generation::traversePointList(std::vector<std::vector<float>> end_point, bo
       step_list_msg = gait_generation.createLowerBodyEndStepQueue(step_list_msg);
       if(end_point[point_list_id].size() == 4 && end_point.size() == point_list_id + 1)
       {
-        ROS_INFO("Successful Rotation: %f", end_point[point_list_id][3]-total_heading);
-        if(end_point[point_list_id][3]-total_heading > 2*M_PI/3 || end_point[point_list_id][3]-total_heading < -2*M_PI/3)
+		float final_heading = end_point[point_list_id][3]-total_heading;
+        ROS_INFO("Pre Rotation: %f", final_heading);
+        if(final_heading < -M_PI || final_heading > M_PI)
         {
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/4);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/4);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/4);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/4);
+          if(final_heading > 0)
+          {
+            final_heading -= 2*M_PI;
+          }
+          else
+          {
+            final_heading += 2*M_PI;
+          }
         }
-        else if((end_point[point_list_id][3]-total_heading) > M_PI/2 || (end_point[point_list_id][3]-total_heading) < -M_PI/2)
+        ROS_INFO("Successful Rotation: %f", final_heading);
+        if(final_heading > 3*M_PI/4 || final_heading < -3*M_PI/4)
         {
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/3);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/3);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/3);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
         }
-        else if((end_point[point_list_id][3]-total_heading) > M_PI/3 || (end_point[point_list_id][3]-total_heading) < -M_PI/3)
+        else if(final_heading > M_PI/2 || final_heading < -M_PI/2)
         {
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/2);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/2);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/3);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/3);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/3);
+        }
+        else if(final_heading > M_PI/4 || final_heading < -M_PI/4)
+        {
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/2);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/2);
         }
         else
         {
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading));
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading);
         }
       }
     }
@@ -1626,8 +1742,30 @@ Path_Generation::traversePointList(std::vector<std::vector<float>> end_point, bo
         total_heading += new_heading;
       }
       ROS_INFO("Distance: %f\tHeading: %f\tRaw Heading: %f\tTotal Heading: %f", distance, heading, new_heading, total_heading);
+      if(heading < -M_PI || heading > M_PI)
+      {
+        if(heading > 0)
+        {
+          heading -= 2*M_PI;
+        }
+        else
+        {
+          heading += 2*M_PI;
+        }
+      }
+      if(total_heading < -M_PI || total_heading > M_PI)
+      {
+        if(total_heading > 0)
+        {
+          total_heading -= 2*M_PI;
+        }
+        else
+        {
+          total_heading += 2*M_PI;
+        }
+      }
       
-      if(heading > 2*M_PI/3 || heading < -2*M_PI/3)
+      if(heading > 3*M_PI/4 || heading < -3*M_PI/4)
       {
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/4);
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/4);
@@ -1640,7 +1778,7 @@ Path_Generation::traversePointList(std::vector<std::vector<float>> end_point, bo
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/3);
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/3);
       }
-      else if(heading > M_PI/3 || heading < -M_PI/3)
+      else if(heading > M_PI/4 || heading < -M_PI/4)
       {
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/2);
         step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading/2);
@@ -1658,28 +1796,41 @@ Path_Generation::traversePointList(std::vector<std::vector<float>> end_point, bo
       step_list_msg = gait_generation.createLowerBodyEndStepQueue(step_list_msg);
       if(end_point[point_list_id].size() == 4 && end_point.size() == point_list_id + 1)
       {
-        ROS_INFO("Successful Rotation: %f", end_point[point_list_id][3]-total_heading);
-        if(end_point[point_list_id][3]-total_heading > 2*M_PI/3 || end_point[point_list_id][3]-total_heading < -2*M_PI/3)
+		float final_heading = end_point[point_list_id][3]-total_heading;
+        ROS_INFO("Pre Rotation: %f", final_heading);
+        if(final_heading < -M_PI || final_heading > M_PI)
         {
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/4);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/4);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/4);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/4);
+          if(final_heading > 0)
+          {
+            final_heading -= 2*M_PI;
+          }
+          else
+          {
+            final_heading += 2*M_PI;
+          }
         }
-        else if((end_point[point_list_id][3]-total_heading) > M_PI/2 || (end_point[point_list_id][3]-total_heading) < -M_PI/2)
+        ROS_INFO("Successful Rotation: %f", final_heading);
+        if(final_heading > 3*M_PI/4 || final_heading < -3*M_PI/4)
         {
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/3);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/3);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/3);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/4);
         }
-        else if((end_point[point_list_id][3]-total_heading) > M_PI/3 || (end_point[point_list_id][3]-total_heading) < -M_PI/3)
+        else if(final_heading > M_PI/2 || final_heading < -M_PI/2)
         {
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/2);
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading)/2);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/3);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/3);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/3);
+        }
+        else if(final_heading > M_PI/4 || final_heading < -M_PI/4)
+        {
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/2);
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading/2);
         }
         else
         {
-          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, (end_point[point_list_id][3]-total_heading));
+          step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, final_heading);
         }
       }
     }

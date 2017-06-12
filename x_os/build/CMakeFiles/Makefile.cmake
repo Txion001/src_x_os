@@ -15,6 +15,8 @@ SET(CMAKE_MAKEFILE_DEPENDS
   "catkin_generated/order_packages.cmake"
   "gait_generation/catkin_generated/ordered_paths.cmake"
   "gait_generation/catkin_generated/package.cmake"
+  "habitat_driver/catkin_generated/ordered_paths.cmake"
+  "habitat_driver/catkin_generated/package.cmake"
   "map_scan/catkin_generated/ordered_paths.cmake"
   "map_scan/catkin_generated/package.cmake"
   "path_generation/catkin_generated/ordered_paths.cmake"
@@ -42,6 +44,8 @@ SET(CMAKE_MAKEFILE_DEPENDS
   "x_publisher/catkin_generated/package.cmake"
   "/home/tom/x_os/devel/share/gait_generation/cmake/gait_generationConfig-version.cmake"
   "/home/tom/x_os/devel/share/gait_generation/cmake/gait_generationConfig.cmake"
+  "/home/tom/x_os/devel/share/habitat_driver/cmake/habitat_driverConfig-version.cmake"
+  "/home/tom/x_os/devel/share/habitat_driver/cmake/habitat_driverConfig.cmake"
   "/home/tom/x_os/devel/share/map_scan/cmake/map_scanConfig-version.cmake"
   "/home/tom/x_os/devel/share/map_scan/cmake/map_scanConfig.cmake"
   "/home/tom/x_os/devel/share/path_generation/cmake/path_generationConfig-version.cmake"
@@ -63,6 +67,8 @@ SET(CMAKE_MAKEFILE_DEPENDS
   "/home/tom/x_os/src/CMakeLists.txt"
   "/home/tom/x_os/src/gait_generation/CMakeLists.txt"
   "/home/tom/x_os/src/gait_generation/package.xml"
+  "/home/tom/x_os/src/habitat_driver/CMakeLists.txt"
+  "/home/tom/x_os/src/habitat_driver/package.xml"
   "/home/tom/x_os/src/map_scan/CMakeLists.txt"
   "/home/tom/x_os/src/map_scan/package.xml"
   "/home/tom/x_os/src/path_generation/CMakeLists.txt"
@@ -337,6 +343,7 @@ SET(CMAKE_MAKEFILE_PRODUCTS
   "x_ocu/CMakeFiles/CMakeDirectoryInformation.cmake"
   "x_proto/CMakeFiles/CMakeDirectoryInformation.cmake"
   "x_publisher/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "habitat_driver/CMakeFiles/CMakeDirectoryInformation.cmake"
   "solar_components_driver/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
@@ -423,5 +430,6 @@ SET(CMAKE_DEPEND_INFO_FILES
   "x_ocu/CMakeFiles/x_ocu_node.dir/DependInfo.cmake"
   "x_proto/CMakeFiles/x_proto_node.dir/DependInfo.cmake"
   "x_publisher/CMakeFiles/x_publisher.dir/DependInfo.cmake"
+  "habitat_driver/CMakeFiles/habitat_driver.dir/DependInfo.cmake"
   "solar_components_driver/CMakeFiles/solar_components_driver.dir/DependInfo.cmake"
   )

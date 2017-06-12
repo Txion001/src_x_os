@@ -1,2 +1,2 @@
-gait_generation:map_scan:path_generation:satellite_dish_driver:solar_components_driver:src_finals_controller:trajectory_generation:x_main:x_msgs:x_ocu:x_proto:x_publisher
+gait_generation:habitat_driver:map_scan:path_generation:satellite_dish_driver:solar_components_driver:src_finals_controller:trajectory_generation:x_main:x_msgs:x_ocu:x_proto:x_publisher
 -DCATKIN_DEVEL_PREFIX=/home/tom/x_os/devel -DCMAKE_INSTALL_PREFIX=/home/tom/x_os/install -G Unix Makefiles

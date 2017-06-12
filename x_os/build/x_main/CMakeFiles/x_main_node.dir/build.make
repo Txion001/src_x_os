@@ -85,6 +85,7 @@ x_main_node_EXTERNAL_OBJECTS =
 /home/tom/x_os/devel/lib/x_main/x_main_node: /home/tom/x_os/devel/lib/libpath_generation.so
 /home/tom/x_os/devel/lib/x_main/x_main_node: /home/tom/x_os/devel/lib/libsatellite_dish_driver.so
 /home/tom/x_os/devel/lib/x_main/x_main_node: /home/tom/x_os/devel/lib/libsolar_components_driver.so
+/home/tom/x_os/devel/lib/x_main/x_main_node: /home/tom/x_os/devel/lib/libhabitat_driver.so
 /home/tom/x_os/devel/lib/x_main/x_main_node: /home/tom/x_os/devel/lib/libgait_generation.so
 /home/tom/x_os/devel/lib/x_main/x_main_node: /home/tom/x_os/devel/lib/libmap_scan.so
 /home/tom/x_os/devel/lib/x_main/x_main_node: /opt/ros/indigo/lib/libpcl_ros_filters.so

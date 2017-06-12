@@ -41,11 +41,14 @@ class Map_Scan
     const std::string WORLD = "world";
     const std::string CAMERA_FRAME = "left_camera_optical_frame";
     const std::string RIGHT_FOOT_SOLE = "rightCOP_Frame";
+    const std::string RIGHT_FOOT_ANKLE = "rightFoot";
+    const std::string LEFT_FOOT_ANKLE = "leftFoot";
     
     // Point Clouds for map scanning.
     pcl::PointCloud<pcl::PointXYZRGB> raw_scan;
     pcl::PointCloud<pcl::PointXYZRGB> raw_copy_scan;
     pcl::PointCloud<pcl::PointXYZRGB> map;
+    pcl::PointCloud<pcl::PointXYZRGB> habitat;
   
     // Obtains the pointcloud image from topic
     void 
@@ -59,13 +62,19 @@ class Map_Scan
     // Filters obstacles that hang over floor
     void
     overHangFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    overHangBlueFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
     // Filters raw point cloud to floor
     void
     floorFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* input, pcl::PointCloud<pcl::PointXYZRGB>* output);
     void
+    floorHabFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* input, pcl::PointCloud<pcl::PointXYZRGB>* output);
+    void
     taskOneFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* input, pcl::PointCloud<pcl::PointXYZRGB>* output);
     void
     taskTwoFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* input, pcl::PointCloud<pcl::PointXYZRGB>* output);
+    void
+    taskThreeFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* input, pcl::PointCloud<pcl::PointXYZRGB>* output);
     void
     taskTwoHandleFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* input, pcl::PointCloud<pcl::PointXYZRGB>* output, std::vector<float> button_point);
     void
@@ -82,6 +91,8 @@ class Map_Scan
     GoldRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
     bool
     GoldFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    bool
+    HandleCorrectFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
   
   public:
     Map_Scan();
@@ -107,6 +118,16 @@ class Map_Scan
     void
     rightScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
+    wideHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
+    forwardHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
+    lowHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
+    leftHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
+    rightHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
     narrowScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
     simpleScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
@@ -119,6 +140,8 @@ class Map_Scan
     void
     wideTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
+    wideTaskThreeComponentsScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
     simpleTaskTwoCableScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
     wideTaskTwoCableScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
@@ -129,7 +152,7 @@ class Map_Scan
     void
     lowTaskTwoPlugScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
-    wideTaskTwoStairScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    wideTaskThreeStairScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     bool
     YellowFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
 };

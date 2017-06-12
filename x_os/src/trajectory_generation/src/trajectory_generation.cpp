@@ -593,12 +593,12 @@ Trajectory_Generation::createStepLinearStairs(bool step_side, float step_distanc
     std::vector<ihmc_msgs::Point2dRosMessage> contact_points(4);
     contact_points[0].x = 0.5 * FOOT_LENGTH;
     contact_points[0].y = 0.5 * FOOT_WIDTH;
-    contact_points[1].x = -0.25 * FOOT_LENGTH;
+    contact_points[1].x = -0.125 * FOOT_LENGTH;
     contact_points[1].y = 0.5 * FOOT_WIDTH;
     contact_points[2].x = 0.5 * FOOT_LENGTH;
-    contact_points[2].y = -0.125 * FOOT_WIDTH;
-    contact_points[3].x = -0.25 * FOOT_LENGTH;
-    contact_points[3].y = -0.125 * FOOT_WIDTH;
+    contact_points[2].y = -0.0 * FOOT_WIDTH;
+    contact_points[3].x = -0.125 * FOOT_LENGTH;
+    contact_points[3].y = -0.0 * FOOT_WIDTH;
     
     new_step_msg.predicted_contact_points = contact_points;
     tf2Scalar roll = 0;
@@ -618,12 +618,12 @@ Trajectory_Generation::createStepLinearStairs(bool step_side, float step_distanc
     
     std::vector<ihmc_msgs::Point2dRosMessage> contact_points(4);
     contact_points[0].x = 0.5 * FOOT_LENGTH;
-    contact_points[0].y = 0.125 * FOOT_WIDTH;
-    contact_points[1].x = -0.25 * FOOT_LENGTH;
-    contact_points[1].y = 0.125 * FOOT_WIDTH;
+    contact_points[0].y = 0.0 * FOOT_WIDTH;
+    contact_points[1].x = -0.125 * FOOT_LENGTH;
+    contact_points[1].y = 0.0 * FOOT_WIDTH;
     contact_points[2].x = 0.5 * FOOT_LENGTH;
     contact_points[2].y = -0.5 * FOOT_WIDTH;
-    contact_points[3].x = -0.25 * FOOT_LENGTH;
+    contact_points[3].x = -0.125 * FOOT_LENGTH;
     contact_points[3].y = -0.5 * FOOT_WIDTH;
     
     new_step_msg.predicted_contact_points = contact_points;
@@ -768,6 +768,17 @@ Trajectory_Generation::createStepOffsetReset(bool step_side, float step_distance
   tf2Scalar roll = (left_roll+right_roll)/2;
   tf2Scalar pitch = (left_pitch+right_pitch)/2;
   tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
   
   
   if(step_side == RIGHT)

@@ -22,15 +22,14 @@ Gait_Generation::createStanceReset()
   
   // Step list message configuration
   step_list_msg.execution_mode = ihmc_msgs::FootstepDataListRosMessage::OVERRIDE;
-  step_list_msg.default_swing_time = 1.5;
-  step_list_msg.default_transfer_time = 1.5;
-  step_list_msg.final_transfer_time = 1.5;
+  step_list_msg.default_swing_time = 2.0;
+  step_list_msg.default_transfer_time = 2.0;
+  step_list_msg.final_transfer_time = 2.0;
   step_list_msg.unique_id = 1;
   
   geometry_msgs::TransformStamped right_foot_ankle = tfBuffer.lookupTransform(WORLD, RIGHT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
   geometry_msgs::TransformStamped pelvis = tfBuffer.lookupTransform(WORLD, PELVIS, ros::Time(0), ros::Duration(0.2));
-  
   
   tf2::Quaternion heading(pelvis.transform.rotation.x, pelvis.transform.rotation.y, pelvis.transform.rotation.z, pelvis.transform.rotation.w);
   tf2Scalar roll;
@@ -106,7 +105,7 @@ Gait_Generation::createStanceReset()
   std::vector<float> left_arm_ang_vel(7, 0);
   left_arm_set[1] = -1.33;
   left_arm_set[2] = 0.3;
-  left_arm_set[3] = -1.7;
+  left_arm_set[3] = -2.0;
   left_arm_set[4] = 1.2;
   left_arm_set[6] = 0.1;
   left_arm_msg = this->trajectory_generation.appendTrajectoryPoint(1.5, left_arm_set, left_arm_ang_vel, left_arm_msg);
@@ -115,7 +114,7 @@ Gait_Generation::createStanceReset()
   std::vector<float> right_arm_ang_vel(7, 0);
   right_arm_set[1] = 1.33;
   right_arm_set[2] = 0.3;
-  right_arm_set[3] = 1.7;
+  right_arm_set[3] = 2.0;
   right_arm_set[4] = 1.2;
   right_arm_set[6] = -0.1;
   right_arm_msg = this->trajectory_generation.appendTrajectoryPoint(1.5, right_arm_set, right_arm_ang_vel, right_arm_msg);
@@ -125,11 +124,11 @@ Gait_Generation::createStanceReset()
   std::vector<float> new_chest_ang_vel (3, 0);
   new_chest_orient[1] = 0.1;
   new_chest_orient[2] = yaw;
-  float chest_time = 1.0;
-  chest_msg.taskspace_trajectory_points.push_back(this->trajectory_generation.createSO3TrajectoryOrient(0.0, new_chest_orient, new_chest_ang_vel));
+  float chest_time = 1.5;
+  chest_msg.taskspace_trajectory_points.push_back(this->trajectory_generation.createSO3TrajectoryOrient(chest_time, new_chest_orient, new_chest_ang_vel));
   
   pelvis_msg.execution_mode = ihmc_msgs::PelvisTrajectoryRosMessage::OVERRIDE;
-  pelvis_msg.taskspace_trajectory_points.push_back(this->trajectory_generation.createPelvisHeightTrajectoryPoint(0.5, 1.06));
+  pelvis_msg.taskspace_trajectory_points.push_back(this->trajectory_generation.createPelvisHeightTrajectoryPoint(1.5, 1.06));
   
   //Publish All Trajectories
   trajectory_list_msg.left_arm_trajectory_message = left_arm_msg;
@@ -415,6 +414,17 @@ Gait_Generation::createLowerBodyRotateGaitOverride(float heading)
   tf2Scalar roll = (left_roll+right_roll)/2;
   tf2Scalar pitch = (left_pitch+right_pitch)/2;
   tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
   geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
   center_point.x += right_foot_ankle.transform.translation.x;
   center_point.y += right_foot_ankle.transform.translation.y;
@@ -551,6 +561,182 @@ Gait_Generation::createLowerBodyLinearGaitOverride(x_vector destination, float h
       else if(robot_side == RIGHT)
       {
         step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepOffsetLinear(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
+        robot_side = LEFT;
+      }
+    }
+  }
+  else
+  {
+    bool robot_side;
+    if(destination.y > 0)
+    {
+      robot_side = LEFT;
+    }
+    else if(destination.y < 0)
+    {
+      robot_side = RIGHT;
+    }
+    
+    while(fabs(new_step_pos[1]) <= fabs(destination.y) - 0.01)
+    {
+      if(fabs(destination.y) - fabs(new_step_pos[1]) < fabs(step_distance_y))
+      {
+        new_step_pos[0] = destination.x;
+        new_step_pos[1] = destination.y;
+        new_step_pos[2] = destination.z;
+      }
+      else
+      {
+        new_step_pos[0] += step_distance_x;
+        new_step_pos[1] += step_distance_y;
+        new_step_pos[2] += step_distance_z;
+      }
+      
+      std::vector<float> temp_pos(3, 0);
+      temp_pos[0] = new_step_pos[0];
+      temp_pos[1] = new_step_pos[1];
+      temp_pos[2] = new_step_pos[2];
+      if(robot_side == LEFT)
+      {
+        temp_pos[1] += foot_seperation;
+      }
+      else if(robot_side == RIGHT)
+      {
+        temp_pos[1] -= foot_seperation;
+      }
+      tf2::Matrix3x3 orientation;
+      orientation.setRPY(0.0, 0.0, heading + yaw);
+      new_step_pos_temp[0] = temp_pos[0]*orientation[0][0] + temp_pos[1]*orientation[0][1] + temp_pos[2]*orientation[0][2];
+      new_step_pos_temp[1] = temp_pos[0]*orientation[1][0] + temp_pos[1]*orientation[1][1] + temp_pos[2]*orientation[1][2];
+      new_step_pos_temp[2] = temp_pos[0]*orientation[2][0] + temp_pos[1]*orientation[2][1] + temp_pos[2]*orientation[2][2];
+      
+      if(robot_side == LEFT)
+      {
+        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepOffsetLinear(LEFT, step_distance_x, new_step_pos_temp, heading + yaw));
+        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepOffsetLinear(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
+      }
+      else if(robot_side == RIGHT)
+      {
+        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepOffsetLinear(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
+        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepOffsetLinear(LEFT, step_distance_x, new_step_pos_temp, heading + yaw));
+      }
+    }
+  }
+  return step_list_msg;
+}
+
+// Override generators
+ihmc_msgs::FootstepDataListRosMessage
+Gait_Generation::createLowerBodyLinearGaitStairOverride(x_vector destination, float heading, float step_distance)
+{
+  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
+  geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  geometry_msgs::TransformStamped right_foot_ankle = tfBuffer.lookupTransform(WORLD, RIGHT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  tf2Scalar left_roll;
+  tf2Scalar left_pitch;
+  tf2Scalar left_yaw;
+  tf2Scalar right_roll;
+  tf2Scalar right_pitch;
+  tf2Scalar right_yaw;
+  tf2::Quaternion left_orientation(left_foot_ankle.transform.rotation.x, left_foot_ankle.transform.rotation.y, left_foot_ankle.transform.rotation.z, left_foot_ankle.transform.rotation.w);
+  tf2::Quaternion right_orientation(right_foot_ankle.transform.rotation.x, right_foot_ankle.transform.rotation.y, right_foot_ankle.transform.rotation.z, right_foot_ankle.transform.rotation.w);
+  tf2::Matrix3x3 left_rotation(left_orientation);
+  left_rotation.getRPY(left_roll, left_pitch, left_yaw);
+  tf2::Matrix3x3 right_rotation(right_orientation);
+  right_rotation.getRPY(right_roll, right_pitch, right_yaw);
+  tf2Scalar roll = (left_roll+right_roll)/2;
+  tf2Scalar pitch = (left_pitch+right_pitch)/2;
+  tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
+  geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
+  center_point.x += right_foot_ankle.transform.translation.x;
+  center_point.y += right_foot_ankle.transform.translation.y;
+  center_point.z += right_foot_ankle.transform.translation.z;
+  
+  center_point.x = center_point.x/2;
+  center_point.y = center_point.y/2;
+  center_point.z = center_point.z/2;
+  
+  //Sends walking commands to valkyrie
+  ihmc_msgs::FootstepDataListRosMessage step_list_msg;
+  
+  // Step list message configuration
+  step_list_msg.execution_mode = ihmc_msgs::FootstepDataListRosMessage::OVERRIDE;
+  step_list_msg.default_swing_time = 3.0;
+  step_list_msg.default_transfer_time = 3.0;
+  step_list_msg.final_transfer_time = 1.5;
+  step_list_msg.unique_id = 1;
+
+  const float combined_step_distance = step_distance;
+  const float foot_seperation = DEFAULT_STEP_SEPERATION;
+  const float conversion_factor = combined_step_distance/sqrt(pow(destination.x, 2.0) + pow(destination.y, 2.0));
+  const float step_distance_x = destination.x * conversion_factor;
+  const float step_distance_y = destination.y * conversion_factor;
+  const float step_distance_z = destination.z * conversion_factor;
+  ROS_INFO("Setup: %f", conversion_factor);
+  
+  std::vector<float> new_step_pos(3, 0);
+  std::vector<float> new_step_pos_temp(3, 0);
+  new_step_pos[2] = DEFAULT_STEP_HEIGHT - 0.15;
+  
+  if(fabs(destination.x)/4.0 >= fabs(destination.y))
+  {
+    bool robot_side = LEFT;
+    while(fabs(new_step_pos[0]) <= fabs(destination.x) - 0.01)
+    {
+      if(fabs(destination.x) - fabs(new_step_pos[0]) < fabs(step_distance_x))
+      {
+        new_step_pos[0] = destination.x;
+        new_step_pos[1] = destination.y;
+        new_step_pos[2] = destination.z - 0.15;
+      }
+      else
+      {
+        new_step_pos[0] += step_distance_x;
+        new_step_pos[1] += step_distance_y;
+        new_step_pos[2] += step_distance_z;
+      }
+      
+      std::vector<float> temp_pos(3, 0);
+      temp_pos[0] = new_step_pos[0];
+      temp_pos[1] = new_step_pos[1];
+      temp_pos[2] = new_step_pos[2];
+      ROS_INFO("Distance: %f", temp_pos[0]);
+      
+      if(robot_side == LEFT)
+      {
+        temp_pos[1] += foot_seperation/2;
+      }
+      else if(robot_side == RIGHT)
+      {
+        temp_pos[1] -= foot_seperation/2;
+      }
+      
+      tf2::Matrix3x3 orientation;
+      orientation.setRPY(0.0, 0.0, heading + yaw);
+      new_step_pos_temp[0] = temp_pos[0]*orientation[0][0] + temp_pos[1]*orientation[0][1] + temp_pos[2]*orientation[0][2] + center_point.x;
+      new_step_pos_temp[1] = temp_pos[0]*orientation[1][0] + temp_pos[1]*orientation[1][1] + temp_pos[2]*orientation[1][2] + center_point.y;
+      new_step_pos_temp[2] = temp_pos[0]*orientation[2][0] + temp_pos[1]*orientation[2][1] + temp_pos[2]*orientation[2][2];
+      
+      if(robot_side == LEFT)
+      {
+        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinearStairs(LEFT, step_distance_x, new_step_pos_temp, heading + yaw));
+        robot_side = RIGHT;
+      }
+      else if(robot_side == RIGHT)
+      {
+        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinearStairs(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
         robot_side = LEFT;
       }
     }
@@ -1182,19 +1368,28 @@ Gait_Generation::createLowerBodyLinearGaitQueue(ihmc_msgs::FootstepDataListRosMe
   }
   else
   {
+    if(destination.y > 0)
+    {
+      robot_side = LEFT;
+    }
+    else
+    {
+      robot_side = RIGHT;
+    }
     while(fabs(new_step_pos[1]) <= fabs(destination.y) - 0.01)
     {
-      if(fabs(destination.y) - fabs(new_step_pos[1]) < step_distance_y)
+      ROS_INFO("Creating side step");
+      if(fabs(destination.y) - fabs(new_step_pos[1]) < fabs(step_distance_y)/4)
       {
         new_step_pos[0] = destination.x;
         new_step_pos[1] = destination.y;
-        new_step_pos[2] = destination.z;
+        new_step_pos[2] += step_distance_z/4;
       }
       else
       {
-        new_step_pos[0] += step_distance_x;
-        new_step_pos[1] += step_distance_y;
-        new_step_pos[2] += step_distance_z;
+        new_step_pos[0] += step_distance_x/4;
+        new_step_pos[1] += step_distance_y/4;
+        new_step_pos[2] += step_distance_z/4;
       }
       new_step_pos[2] = DEFAULT_STEP_HEIGHT;
       tf2::Matrix3x3 rotation;
@@ -1208,36 +1403,56 @@ Gait_Generation::createLowerBodyLinearGaitQueue(ihmc_msgs::FootstepDataListRosMe
       
       if(robot_side == LEFT)
       {
+        ROS_INFO("Creating left side step");
         if(last_known_robot_side == RIGHT)
         {
           new_step_pos_temp[0] += step_seperation[0];
           new_step_pos_temp[1] += step_seperation[1];
           new_step_pos_temp[2] += step_seperation[2];
-        }
-        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinear(LEFT, step_distance_x, new_step_pos_temp, heading + yaw));
-        if(last_known_robot_side == RIGHT)
-        {
+          step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinearStairs(LEFT, step_distance_x, new_step_pos_temp, heading + yaw));
+          ROS_INFO("PushBack left: %f\t%f", new_step_pos_temp[0], new_step_pos_temp[1]);
           new_step_pos_temp[0] -= step_seperation[0];
           new_step_pos_temp[1] -= step_seperation[1];
           new_step_pos_temp[2] -= step_seperation[2];
+          step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinearStairs(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
+          ROS_INFO("PushBack right: %f\t%f", new_step_pos_temp[0], new_step_pos_temp[1]);
         }
-        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepOffsetLinear(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
+        else
+        {
+          step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinearStairs(LEFT, step_distance_x, new_step_pos_temp, heading + yaw));
+          ROS_INFO("PushBack left: %f\t%f", new_step_pos_temp[0], new_step_pos_temp[1]);
+          new_step_pos_temp[0] += step_seperation[0];
+          new_step_pos_temp[1] += step_seperation[1];
+          new_step_pos_temp[2] += step_seperation[2];
+          step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinearStairs(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
+          ROS_INFO("PushBack right: %f\t%f", new_step_pos_temp[0], new_step_pos_temp[1]);
+        }
       }
       else if(robot_side == RIGHT)
       {
+        ROS_INFO("Creating right side step");
         if(last_known_robot_side == LEFT)
         {
           new_step_pos_temp[0] += step_seperation[0];
           new_step_pos_temp[1] += step_seperation[1];
           new_step_pos_temp[2] += step_seperation[2];
+          step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinearStairs(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
+          ROS_INFO("PushBack right: %f\t%f", new_step_pos_temp[0], new_step_pos_temp[1]);
+          new_step_pos_temp[0] -= step_seperation[0];
+          new_step_pos_temp[1] -= step_seperation[1];
+          new_step_pos_temp[2] -= step_seperation[2];
+          step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinearStairs(LEFT, step_distance_x, new_step_pos_temp, heading + yaw));
+          ROS_INFO("PushBack left: %f\t%f", new_step_pos_temp[0], new_step_pos_temp[1]);
         }
-        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinear(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
-        step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinear(LEFT, step_distance_x, new_step_pos_temp, heading + yaw));
-        if(last_known_robot_side == LEFT)
+        else
         {
+          step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinear(RIGHT, step_distance_x, new_step_pos_temp, heading + yaw));
+          ROS_INFO("PushBack right: %f\t%f", new_step_pos_temp[0], new_step_pos_temp[1]);
           new_step_pos_temp[0] += step_seperation[0];
           new_step_pos_temp[1] += step_seperation[1];
           new_step_pos_temp[2] += step_seperation[2];
+          step_list_msg.footstep_data_list.push_back(this->trajectory_generation.createStepLinear(LEFT, step_distance_x, new_step_pos_temp, heading + yaw));
+          ROS_INFO("PushBack left: %f\t%f", new_step_pos_temp[0], new_step_pos_temp[1]);
         }
       }
     }
@@ -1480,9 +1695,9 @@ Gait_Generation::createLowerBodyLinearGaitOffsetQueue(ihmc_msgs::FootstepDataLis
 ihmc_msgs::FootstepDataListRosMessage
 Gait_Generation::createLowerBodyLinearGaitOffsetQueue(ihmc_msgs::FootstepDataListRosMessage step_list_msg, x_vector destination, float heading, float step_distance)
 {
-  step_list_msg.default_swing_time = DEFAULT_SWING_TIME*2;
-  step_list_msg.default_transfer_time = DEFAULT_TRANSFER_TIME*2;
-  step_list_msg.final_transfer_time = FINAL_TRANSFER_TIME*2;
+  step_list_msg.default_swing_time = 3.0;
+  step_list_msg.default_transfer_time = 3.0;
+  step_list_msg.final_transfer_time = 2.5;
   tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -1564,7 +1779,7 @@ Gait_Generation::createLowerBodyLinearGaitOffsetQueue(ihmc_msgs::FootstepDataLis
   
   new_step_pos[0] = 0.0;
   new_step_pos[1] = 0.0;
-  new_step_pos[2] = DEFAULT_STEP_HEIGHT;
+  new_step_pos[2] = DEFAULT_STEP_HEIGHT - 0.15;
   ROS_INFO("Setpoint XYZ:\t%f\t%f\t%f", destination.x, destination.y, destination.z);
   if(fabs(destination.x)/4.0 >= fabs(destination.y))
   {
@@ -1574,7 +1789,7 @@ Gait_Generation::createLowerBodyLinearGaitOffsetQueue(ihmc_msgs::FootstepDataLis
       {
         new_step_pos[0] = destination.x;
         new_step_pos[1] = destination.y;
-        new_step_pos[2] = destination.z;
+        new_step_pos[2] = destination.z - 0.15;
       }
       else
       {
@@ -1632,7 +1847,7 @@ Gait_Generation::createLowerBodyLinearGaitOffsetQueue(ihmc_msgs::FootstepDataLis
       {
         new_step_pos[0] = destination.x;
         new_step_pos[1] = destination.y;
-        new_step_pos[2] = destination.z;
+        new_step_pos[2] += step_distance_z/4;
       }
       else
       {

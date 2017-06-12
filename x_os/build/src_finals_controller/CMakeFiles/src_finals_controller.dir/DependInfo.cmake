@@ -30,6 +30,7 @@ SET(CMAKE_C_TARGET_INCLUDE_PATH
   "/home/tom/x_os/src/satellite_dish_driver/include"
   "/home/tom/x_os/src/solar_components_driver/include"
   "/home/tom/x_os/src/x_publisher/include"
+  "/home/tom/x_os/src/habitat_driver/include"
   "/opt/ros/indigo/include"
   "/usr/include/eigen3"
   "/usr/include/pcl-1.7"

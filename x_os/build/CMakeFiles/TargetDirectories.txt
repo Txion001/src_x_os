@@ -27,6 +27,7 @@
 /home/tom/x_os/build/trajectory_generation/CMakeFiles/geometry_msgs_generate_messages_py.dir
 /home/tom/x_os/build/gtest/CMakeFiles/gtest.dir
 /home/tom/x_os/build/gtest/CMakeFiles/gtest_main.dir
+/home/tom/x_os/build/habitat_driver/CMakeFiles/habitat_driver.dir
 /home/tom/x_os/build/trajectory_generation/CMakeFiles/ihmc_msgs_generate_messages_cpp.dir
 /home/tom/x_os/build/trajectory_generation/CMakeFiles/ihmc_msgs_generate_messages_lisp.dir
 /home/tom/x_os/build/trajectory_generation/CMakeFiles/ihmc_msgs_generate_messages_py.dir

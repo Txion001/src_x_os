@@ -29,7 +29,7 @@ RUN . /opt/ros/indigo/setup.sh \
 
 EXPOSE 8000
 EXPOSE 11311
-ENV ROS_MASTER_URI http://192.168.2.10:11311
+ENV ROS_MASTER_URI http://192.168.2.1:11311
 
 # Copy contents of workspace
 ADD x_os x_os

@@ -679,7 +679,7 @@ Path_Generation::findTaskTwoPanelPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
   heading = num_angle * M_PI_4;
   ROS_INFO("Corrected Heading: %f", heading);
   std::vector<float> end_point(3, 0);
-  end_point[0] = -1.0;
+  end_point[0] = -0.9;
   end_point[1] = 0.0;
   end_point[2] = 0.0;
   tf2::Matrix3x3 rotation;

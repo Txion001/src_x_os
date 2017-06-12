@@ -1441,6 +1441,10 @@ Map_Scan::taskTwoArrayFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::Poi
 void
 Map_Scan::leftScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
+  
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
   neck_msg.unique_id = 1;
   std::vector<float> direction(2, 0);
@@ -1455,9 +1459,6 @@ Map_Scan::leftScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_msg = trajectory_generation.appendTrajectoryPoint(1.5, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
   
-  // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
-  tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
@@ -1492,6 +1493,10 @@ Map_Scan::leftScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 void
 Map_Scan::rightScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
+  
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
   neck_msg.unique_id = 1;
   std::vector<float> direction(2, 0);
@@ -1506,9 +1511,6 @@ Map_Scan::rightScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_msg = trajectory_generation.appendTrajectoryPoint(1.5, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
   
-  // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
-  tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
@@ -1543,6 +1545,10 @@ Map_Scan::rightScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 void
 Map_Scan::lowScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
+  
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
   neck_msg.unique_id = 1;
   std::vector<float> direction(2, 0);
@@ -1557,10 +1563,7 @@ Map_Scan::lowScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_msg = trajectory_generation.appendTrajectoryPoint(1.5, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
   
-  // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
-  tf2_ros::TransformListener tfListener(tfBuffer);
-  ros::Duration(1.75).sleep();
+  ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
   // Point Cloud for map.
@@ -1594,6 +1597,10 @@ Map_Scan::lowScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 void
 Map_Scan::forwardScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
+  
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
   neck_msg.unique_id = 1;
   std::vector<float> direction(2, 0);
@@ -1607,11 +1614,7 @@ Map_Scan::forwardScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_ang_vel[1] = 0.0;
   neck_msg = trajectory_generation.appendTrajectoryPoint(1.5, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
-  
-  // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
-  tf2_ros::TransformListener tfListener(tfBuffer);
-  ros::Duration(1.0).sleep();
+  ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
   // Point Cloud for map.
@@ -1784,7 +1787,7 @@ Map_Scan::lowHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   // Sets up buffer to recieve relative frame positions.
   tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
-  ros::Duration(1.75).sleep();
+  ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
   // Point Cloud for map.
@@ -1835,7 +1838,7 @@ Map_Scan::forwardHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   // Sets up buffer to recieve relative frame positions.
   tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
-  ros::Duration(1.0).sleep();
+  ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
   // Point Cloud for map.
@@ -2034,7 +2037,7 @@ Map_Scan::simpleTaskTwoScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_msg = trajectory_generation.appendTrajectoryPoint(1.0, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
   
-  ros::Duration(2.0).sleep();
+  ros::Duration(3.0).sleep();
   
   camera_scan_callback.callAvailable(ros::WallDuration());
   
@@ -2049,7 +2052,7 @@ Map_Scan::simpleTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   // Sets up buffer to recieve relative frame positions.
   tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
-  ros::Duration(1.0).sleep();
+  ros::Duration(2.0).sleep();
   
   // Sets up buffer to recieve relative frame positions.
   camera_scan_callback.callAvailable(ros::WallDuration());
@@ -2170,7 +2173,7 @@ Map_Scan::wideTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_ang_vel[1] = 0.0;
   neck_msg_low = trajectory_generation.appendTrajectoryPoint(1.0, neck_pos, neck_ang_vel, neck_msg_low);
   trajectoryNeckPublisher.publish(neck_msg_low);
-  ros::Duration(1.75).sleep();
+  ros::Duration(2.5).sleep();
   // Sets up buffer to recieve relative frame positions.
   camera_scan_callback.callAvailable(ros::WallDuration());
   // Point Cloud for map.
@@ -2205,7 +2208,7 @@ Map_Scan::wideTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_ang_vel[1] = 0.0;
   neck_msg_straignt = trajectory_generation.appendTrajectoryPoint(1.0, neck_pos, neck_ang_vel, neck_msg_straignt);
   trajectoryNeckPublisher.publish(neck_msg_straignt);
-  ros::Duration(1.0).sleep();
+  ros::Duration(2.5).sleep();
   // Sets up buffer to recieve relative frame positions.
   camera_scan_callback.callAvailable(ros::WallDuration());
   // Point Cloud for map.
@@ -2328,7 +2331,7 @@ Map_Scan::wideTaskThreeComponentsScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_ang_vel[1] = 0.0;
   neck_msg_low = trajectory_generation.appendTrajectoryPoint(1.0, neck_pos, neck_ang_vel, neck_msg_low);
   trajectoryNeckPublisher.publish(neck_msg_low);
-  ros::Duration(1.75).sleep();
+  ros::Duration(2.5).sleep();
   // Sets up buffer to recieve relative frame positions.
   camera_scan_callback.callAvailable(ros::WallDuration());
   // Point Cloud for map.
@@ -2363,7 +2366,7 @@ Map_Scan::wideTaskThreeComponentsScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_ang_vel[1] = 0.0;
   neck_msg_straignt = trajectory_generation.appendTrajectoryPoint(1.0, neck_pos, neck_ang_vel, neck_msg_straignt);
   trajectoryNeckPublisher.publish(neck_msg_straignt);
-  ros::Duration(1.0).sleep();
+  ros::Duration(2.5).sleep();
   // Sets up buffer to recieve relative frame positions.
   camera_scan_callback.callAvailable(ros::WallDuration());
   // Point Cloud for map.
@@ -2447,7 +2450,7 @@ Map_Scan::simpleTaskTwoCableScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   // Sets up buffer to recieve relative frame positions.
   tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
-  ros::Duration(1.0).sleep();
+  ros::Duration(2.0).sleep();
   
   // Sets up buffer to recieve relative frame positions.
   camera_scan_callback.callAvailable(ros::WallDuration());

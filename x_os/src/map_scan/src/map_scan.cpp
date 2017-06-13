@@ -1965,7 +1965,7 @@ Map_Scan::simpleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   // Sets up buffer to recieve relative frame positions.
   tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
-  ros::Duration(1.0).sleep();
+  ros::Duration(3.0).sleep();
   
   camera_scan_callback.callAvailable(ros::WallDuration());
   
@@ -2003,7 +2003,7 @@ Map_Scan::simpleTaskOneScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   // Sets up buffer to recieve relative frame positions.
   tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
-  ros::Duration(1.0).sleep();
+  ros::Duration(3.0).sleep();
   
   camera_scan_callback.callAvailable(ros::WallDuration());
   

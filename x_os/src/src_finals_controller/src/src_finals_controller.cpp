@@ -428,6 +428,47 @@ Src_Finals_Controller::executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher
   map_scan.generateHabitat(&map);
   pcl::toROSMsg(map, output);
   scan_output.publish(output);
+  
+  map_scan.wideHabScan(&map);
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
+  map_scan.wideTaskThreeComponentsScan(&map);
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
+  
+  std::vector<float> table_point;
+  while(path_generation.findTaskThreeDetectorPoint(&map, &table_point) == false)
+  {
+    std::vector<float> end_point;
+    end_point = path_generation.findMapNextPoint(&map, 3.0);
+    std::vector<std::vector<float>> point_list = path_generation.createPathPointHabList(tfBuffer, end_point, &map);
+    pcl::toROSMsg(map, output);
+    scan_output.publish(output);
+    path_generation.traversePointList(point_list, true);
+    pcl::toROSMsg(map, output);
+    scan_output.publish(output);
+    
+    map_scan.wideHabScan(&map);
+    pcl::toROSMsg(map, output);
+    scan_output.publish(output);
+    map_scan.wideTaskThreeComponentsScan(&map);
+    pcl::toROSMsg(map, output);
+    scan_output.publish(output);
+  }
+  std::vector<std::vector<float>> point_list = path_generation.createPathPointHabList(tfBuffer, table_point, &map);
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
+  path_generation.traversePointList(point_list, true);
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
+  
+  map_scan.lowTaskThreeScan(&map);
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
+  
+  habitat_driver.alignToDetector(tfBuffer, &map);
+  habitat_driver.pickUpDetector(&map);
+  
 }
 
 void

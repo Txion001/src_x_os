@@ -62,10 +62,16 @@ class Path_Generation
     findTaskThreeStairPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* output);
     std::vector<std::vector<float>>
     createPathPointList(tf2_ros::Buffer* tfBuffer, std::vector<float> end_point, pcl::PointCloud<pcl::PointXYZRGB>* map);
+    std::vector<std::vector<float>>
+    createPathPointHabList(tf2_ros::Buffer* tfBuffer, std::vector<float> end_point, pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
     traverseToPoint(std::vector<float> end_point, bool arms_disabled);
     void
     traversePointList(std::vector<std::vector<float>> end_point, bool arms_disabled);
+    bool
+    findTaskThreeTablePoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* output);
+    bool
+    findTaskThreeDetectorPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* output);
 };
  
 #endif

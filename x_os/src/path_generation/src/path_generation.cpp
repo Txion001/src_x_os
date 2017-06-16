@@ -19,7 +19,7 @@ float
 Path_Generation::findMapEndDistance(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   std::vector<pcl::PointXYZRGB> traverse_checkpoint_list;
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -85,7 +85,7 @@ std::vector<float>
 Path_Generation::findMapEndPoint(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   std::vector<pcl::PointXYZRGB> traverse_checkpoint_list;
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -172,7 +172,7 @@ bool
 Path_Generation::findMapNextPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* next_point)
 {
   std::vector<pcl::PointXYZRGB> traverse_checkpoint_list;
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -305,7 +305,7 @@ std::vector<float>
 Path_Generation::findMapNextPoint(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   std::vector<pcl::PointXYZRGB> traverse_checkpoint_list;
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -413,7 +413,7 @@ std::vector<float>
 Path_Generation::findMapNextPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, float distance_to_travel)
 {
   std::vector<pcl::PointXYZRGB> traverse_checkpoint_list;
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -596,7 +596,7 @@ Path_Generation::findTaskOnePoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::v
 bool
 Path_Generation::findTaskTwoPanelPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* output)
 {
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -633,6 +633,7 @@ Path_Generation::findTaskTwoPanelPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
   task_point[2] = 0;
   float heading = 0;
   bool found_panel = false;
+  bool found_trailer = true;
   
   // Locate center point between task one handles
   for(int point_id = 0; point_id < map->points.size(); point_id++)
@@ -646,7 +647,7 @@ Path_Generation::findTaskTwoPanelPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
     }
     else if(map->points[point_id].b == 10 && map->points[point_id].g == 10 && map->points[point_id].r == 10)
     {
-      found_panel = true;
+      found_trailer = true;
       trailer_point[0] = map->points[point_id].x;
       trailer_point[1] = map->points[point_id].y;
       trailer_point[2] = map->points[point_id].z;
@@ -689,7 +690,287 @@ Path_Generation::findTaskTwoPanelPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
   float handle_final_distance = sqrt(pow(fabs(handle_point[0] - center_point.x), 2.0) + pow(fabs(handle_point[1] - center_point.y), 2.0));
   ROS_INFO("Final Distance: %f", handle_final_distance);
   *output = task_point;
-  if(found_panel == true && handle_final_distance < 3.0)
+  if(found_panel == true && found_trailer == true && handle_final_distance < 3.0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool
+Path_Generation::findTaskThreeTablePoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* output)
+{
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
+  
+  geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  geometry_msgs::TransformStamped right_foot_ankle = tfBuffer.lookupTransform(WORLD, RIGHT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  tf2Scalar left_roll;
+  tf2Scalar left_pitch;
+  tf2Scalar left_yaw;
+  tf2Scalar right_roll;
+  tf2Scalar right_pitch;
+  tf2Scalar right_yaw;
+  tf2::Quaternion left_orientation(left_foot_ankle.transform.rotation.x, left_foot_ankle.transform.rotation.y, left_foot_ankle.transform.rotation.z, left_foot_ankle.transform.rotation.w);
+  tf2::Quaternion right_orientation(right_foot_ankle.transform.rotation.x, right_foot_ankle.transform.rotation.y, right_foot_ankle.transform.rotation.z, right_foot_ankle.transform.rotation.w);
+  tf2::Matrix3x3 left_rotation(left_orientation);
+  left_rotation.getRPY(left_roll, left_pitch, left_yaw);
+  tf2::Matrix3x3 right_rotation(right_orientation);
+  right_rotation.getRPY(right_roll, right_pitch, right_yaw);
+  tf2Scalar roll = (left_roll+right_roll)/2;
+  tf2Scalar pitch = (left_pitch+right_pitch)/2;
+  tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  
+  geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
+  center_point.x += right_foot_ankle.transform.translation.x;
+  center_point.y += right_foot_ankle.transform.translation.y;
+  center_point.z += right_foot_ankle.transform.translation.z;
+  
+  center_point.x = center_point.x/2;
+  center_point.y = center_point.y/2;
+  center_point.z = center_point.z/2;
+  std::vector<float> detector_point(3, 0);
+  std::vector<float> fixer_point(3, 0);
+  std::vector<float> point_between_tools(3, 0);
+  std::vector<float> task_point(4, 0);
+  task_point[0] = 0;
+  task_point[1] = 0;
+  task_point[2] = 0;
+  float heading = 0;
+  bool found_detector = false;
+  bool found_fixer = false;
+  
+  std::vector<std::vector<float>> list_points;
+  
+  // Locate center point between task one handles
+  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  {
+    if(map->points[point_id].b == 200 && map->points[point_id].g == 200 && map->points[point_id].r == 50)
+    {
+      found_detector = true;
+      detector_point[0] = map->points[point_id].x;
+      detector_point[1] = map->points[point_id].y;
+      detector_point[2] = map->points[point_id].z;
+    }
+    else if(map->points[point_id].b == 200 && map->points[point_id].g == 100 && map->points[point_id].r == 0)
+    {
+      found_fixer = true;
+      fixer_point[0] = map->points[point_id].x;
+      fixer_point[1] = map->points[point_id].y;
+      fixer_point[2] = map->points[point_id].z;
+    }
+  }
+  ROS_INFO("XYZ location:\t%f\t%f\t%f", detector_point[0], detector_point[1], detector_point[2]);
+  ROS_INFO("XYZ location:\t%f\t%f\t%f", fixer_point[0], fixer_point[1], fixer_point[2]);
+  
+  point_between_tools[0] = (detector_point[0] + fixer_point[0])/2;
+  point_between_tools[1] = (detector_point[1] + fixer_point[1])/2;
+  point_between_tools[2] = (detector_point[2] + fixer_point[2])/2;
+  
+  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  {
+    float floor_point_to_tools = sqrt(pow(fabs(point_between_tools[0] - map->points[point_id].x), 2.0) + pow(fabs(point_between_tools[1] - map->points[point_id].y), 2.0));
+    if(floor_point_to_tools < 1.0)
+    {
+	  task_point[0] = map->points[point_id].x;
+	  task_point[1] = map->points[point_id].y;
+	  task_point[2] = map->points[point_id].z;
+      list_points.push_back(task_point);
+    }
+  }
+  
+  float closest_distance = 0;
+  for(int point_id = 0; point_id < list_points.size(); point_id++)
+  {
+    float distance_to_tools = sqrt(pow(fabs(list_points[point_id][0] - center_point.x), 2.0) + pow(fabs(list_points[point_id][1] - center_point.y), 2.0));
+    if(closest_distance == 0)
+    {
+	  task_point[0] = list_points[point_id][0];
+	  task_point[1] = list_points[point_id][1];
+	  task_point[2] = list_points[point_id][2];
+	  closest_distance = distance_to_tools;
+    }
+    if(closest_distance > distance_to_tools)
+    {
+	  task_point[0] = list_points[point_id][0];
+	  task_point[1] = list_points[point_id][1];
+	  task_point[2] = list_points[point_id][2];
+	  closest_distance = distance_to_tools;
+    }
+  }
+  
+  std::vector<float> end_point(3, 0);
+  int num_avg_points = 0;
+  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  {
+    float floor_point_avg_area = sqrt(pow(fabs(task_point[0] - map->points[point_id].x), 2.0) + pow(fabs(task_point[1] - map->points[point_id].y), 2.0));
+    if(floor_point_avg_area < 0.15)
+    {
+	  end_point[0] += map->points[point_id].x;
+	  end_point[1] += map->points[point_id].y;
+	  end_point[2] += map->points[point_id].z;
+	  num_avg_points++;
+    }
+  }
+  
+  task_point[0] = end_point[0]/num_avg_points;
+  task_point[1] = end_point[1]/num_avg_points;
+  task_point[2] = end_point[2]/num_avg_points;
+  
+  float floor_point_to_tools = sqrt(pow(fabs(point_between_tools[0] - task_point[0]), 2.0) + pow(fabs(point_between_tools[1] - task_point[1]), 2.0));
+  heading = asin((point_between_tools[1] - task_point[1])/floor_point_to_tools);
+  if(point_between_tools[0] - task_point[0] <= 0)
+  {
+    if(point_between_tools[1] - task_point[1])
+    {
+      heading = -M_PI-heading;
+    }
+    else
+    {
+      heading = M_PI-heading;
+    }
+  }
+  
+  task_point[3] = heading;
+  
+  ROS_INFO("XYYAW location:\t%f\t%f\t%f", task_point[0], task_point[1], task_point[3]);
+  
+  *output = task_point;
+  if(found_detector == true && found_fixer == true)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool
+Path_Generation::findTaskThreeDetectorPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* output)
+{
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
+  
+  geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  geometry_msgs::TransformStamped right_foot_ankle = tfBuffer.lookupTransform(WORLD, RIGHT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  tf2Scalar left_roll;
+  tf2Scalar left_pitch;
+  tf2Scalar left_yaw;
+  tf2Scalar right_roll;
+  tf2Scalar right_pitch;
+  tf2Scalar right_yaw;
+  tf2::Quaternion left_orientation(left_foot_ankle.transform.rotation.x, left_foot_ankle.transform.rotation.y, left_foot_ankle.transform.rotation.z, left_foot_ankle.transform.rotation.w);
+  tf2::Quaternion right_orientation(right_foot_ankle.transform.rotation.x, right_foot_ankle.transform.rotation.y, right_foot_ankle.transform.rotation.z, right_foot_ankle.transform.rotation.w);
+  tf2::Matrix3x3 left_rotation(left_orientation);
+  left_rotation.getRPY(left_roll, left_pitch, left_yaw);
+  tf2::Matrix3x3 right_rotation(right_orientation);
+  right_rotation.getRPY(right_roll, right_pitch, right_yaw);
+  tf2Scalar roll = (left_roll+right_roll)/2;
+  tf2Scalar pitch = (left_pitch+right_pitch)/2;
+  tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  
+  geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
+  center_point.x += right_foot_ankle.transform.translation.x;
+  center_point.y += right_foot_ankle.transform.translation.y;
+  center_point.z += right_foot_ankle.transform.translation.z;
+  
+  center_point.x = center_point.x/2;
+  center_point.y = center_point.y/2;
+  center_point.z = center_point.z/2;
+  std::vector<float> detector_point(3, 0);
+  std::vector<float> fixer_point(3, 0);
+  std::vector<float> point_between_tools(3, 0);
+  std::vector<float> task_point(4, 0);
+  task_point[0] = 0;
+  task_point[1] = 0;
+  task_point[2] = 0;
+  float heading = 0;
+  bool found_detector = false;
+  bool found_fixer = false;
+  
+  std::vector<std::vector<float>> list_points;
+  
+  // Locate center point between task one handles
+  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  {
+    if(map->points[point_id].b == 200 && map->points[point_id].g == 200 && map->points[point_id].r == 50)
+    {
+      found_detector = true;
+      detector_point[0] = map->points[point_id].x;
+      detector_point[1] = map->points[point_id].y;
+      detector_point[2] = map->points[point_id].z;
+    }
+  }
+  ROS_INFO("XYZ location:\t%f\t%f\t%f", detector_point[0], detector_point[1], detector_point[2]);
+  ROS_INFO("XYZ location:\t%f\t%f\t%f", fixer_point[0], fixer_point[1], fixer_point[2]);
+  
+  point_between_tools[0] = detector_point[0];
+  point_between_tools[1] = detector_point[1];
+  point_between_tools[2] = detector_point[2];
+  
+  float closest_point_to_detector = 0;
+  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  {
+    float floor_point_to_tools = sqrt(pow(fabs(point_between_tools[0] - map->points[point_id].x), 2.0) + pow(fabs(point_between_tools[1] - map->points[point_id].y), 2.0));
+    if(closest_point_to_detector == 0 && !(map->points[point_id].b == 200 && map->points[point_id].g == 200 && map->points[point_id].r == 50) && !(map->points[point_id].b == 200 && map->points[point_id].g == 100 && map->points[point_id].r == 0))
+    {
+      task_point[0] = map->points[point_id].x;
+      task_point[1] = map->points[point_id].y;
+      task_point[2] = map->points[point_id].z;
+      closest_point_to_detector = floor_point_to_tools;
+    }
+    if(floor_point_to_tools < closest_point_to_detector && !(map->points[point_id].b == 200 && map->points[point_id].g == 200 && map->points[point_id].r == 50) && !(map->points[point_id].b == 200 && map->points[point_id].g == 100 && map->points[point_id].r == 0))
+    {
+      task_point[0] = map->points[point_id].x;
+      task_point[1] = map->points[point_id].y;
+      task_point[2] = map->points[point_id].z;
+      closest_point_to_detector = floor_point_to_tools;
+    }
+  }
+  
+  std::vector<float> end_point(3, 0);
+  int num_avg_points = 0;
+  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  {
+    float floor_point_avg_area = sqrt(pow(fabs(task_point[0] - map->points[point_id].x), 2.0) + pow(fabs(task_point[1] - map->points[point_id].y), 2.0));
+    if(floor_point_avg_area < 0.25)
+    {
+	  end_point[0] += map->points[point_id].x;
+	  end_point[1] += map->points[point_id].y;
+	  end_point[2] += map->points[point_id].z;
+	  num_avg_points++;
+    }
+  }
+  
+  task_point[0] = end_point[0]/num_avg_points;
+  task_point[1] = end_point[1]/num_avg_points;
+  task_point[2] = end_point[2]/num_avg_points;
+  
+  float floor_point_to_tools = sqrt(pow(fabs(point_between_tools[0] - task_point[0]), 2.0) + pow(fabs(point_between_tools[1] - task_point[1]), 2.0));
+  heading = asin((point_between_tools[1] - task_point[1])/floor_point_to_tools);
+  if(point_between_tools[0] - task_point[0] <= 0)
+  {
+    if(point_between_tools[1] - task_point[1])
+    {
+      heading = -M_PI-heading;
+    }
+    else
+    {
+      heading = M_PI-heading;
+    }
+  }
+  
+  task_point[3] = heading;
+  
+  ROS_INFO("XYYAW location:\t%f\t%f\t%f", task_point[0], task_point[1], task_point[3]);
+  float distance_to_tools = sqrt(pow(fabs(task_point[0] - center_point.x), 2.0) + pow(fabs(task_point[1] - center_point.y), 2.0));
+  
+  *output = task_point;
+  if(found_detector == true && distance_to_tools < 4.0)
   {
     return true;
   }
@@ -702,7 +983,7 @@ Path_Generation::findTaskTwoPanelPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
 bool
 Path_Generation::findTaskTwoArrayPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* output)
 {
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -819,7 +1100,7 @@ Path_Generation::findTaskTwoArrayPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
 bool
 Path_Generation::findTaskTwoArrayPointClose(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* output)
 {
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -944,7 +1225,7 @@ Path_Generation::findTaskTwoArrayPointClose(pcl::PointCloud<pcl::PointXYZRGB>* m
 bool
 Path_Generation::findTaskThreeStairPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, std::vector<float>* output)
 {
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
@@ -1083,6 +1364,17 @@ Path_Generation::createPathPointList(tf2_ros::Buffer* tfBuffer, std::vector<floa
   tf2Scalar roll = (left_roll+right_roll)/2;
   tf2Scalar pitch = (left_pitch+right_pitch)/2;
   tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
   
   geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
   center_point.x += right_foot_ankle.transform.translation.x;
@@ -1344,10 +1636,314 @@ Path_Generation::createPathPointList(tf2_ros::Buffer* tfBuffer, std::vector<floa
   return path_point_list;
 }
 
+/*
+ * Designed to find obstacles between current robot location
+ * and endpoint. Then utilize obstacle avoidence to produce
+ * new check points for valkyrie to walk to.
+ * 
+ */
+std::vector<std::vector<float>>
+Path_Generation::createPathPointHabList(tf2_ros::Buffer* tfBuffer, std::vector<float> end_point, pcl::PointCloud<pcl::PointXYZRGB>* map)/// TODO: Create a full 360 degree path planner that excludes return 
+{
+  //ROS_INFO("Section Start.");
+  ros::NodeHandle mainNodeHandle;
+  std::vector<std::vector<float>> path_point_list;
+  
+  geometry_msgs::TransformStamped left_foot_ankle = tfBuffer->lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  geometry_msgs::TransformStamped right_foot_ankle = tfBuffer->lookupTransform(WORLD, RIGHT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  tf2Scalar left_roll;
+  tf2Scalar left_pitch;
+  tf2Scalar left_yaw;
+  tf2Scalar right_roll;
+  tf2Scalar right_pitch;
+  tf2Scalar right_yaw;
+  tf2::Quaternion left_orientation(left_foot_ankle.transform.rotation.x, left_foot_ankle.transform.rotation.y, left_foot_ankle.transform.rotation.z, left_foot_ankle.transform.rotation.w);
+  tf2::Quaternion right_orientation(right_foot_ankle.transform.rotation.x, right_foot_ankle.transform.rotation.y, right_foot_ankle.transform.rotation.z, right_foot_ankle.transform.rotation.w);
+  tf2::Matrix3x3 left_rotation(left_orientation);
+  left_rotation.getRPY(left_roll, left_pitch, left_yaw);
+  tf2::Matrix3x3 right_rotation(right_orientation);
+  right_rotation.getRPY(right_roll, right_pitch, right_yaw);
+  tf2Scalar roll = (left_roll+right_roll)/2;
+  tf2Scalar pitch = (left_pitch+right_pitch)/2;
+  tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
+  
+  geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
+  center_point.x += right_foot_ankle.transform.translation.x;
+  center_point.y += right_foot_ankle.transform.translation.y;
+  center_point.z += right_foot_ankle.transform.translation.z;
+  
+  center_point.x = center_point.x/2;
+  center_point.y = center_point.y/2;
+  center_point.z = center_point.z/2;
+  
+  float current_x_checkpoint = center_point.x;
+  float current_y_checkpoint = center_point.y;
+  const int obstacle_count = 21;
+  const float radius_of_zone_to_check = 0.42;
+  
+  ROS_INFO("Current foot position: %f\t%f", current_x_checkpoint, current_y_checkpoint);
+  
+  bool cleared_obstacles = false;
+  bool reached_closing_distance = false;
+  //while(cleared_obstacles == false && mainNodeHandle.ok())
+  //{
+  for(int num_obstacle_avoidances = 0; num_obstacle_avoidances <= 5 && cleared_obstacles == false && reached_closing_distance == false; num_obstacle_avoidances++)
+  {
+    ROS_INFO("Section determine whether path has obstacle");
+    // Determine if the current path has an obstacle.
+    // Calculate points along path to end location
+    float x_end_point = end_point[0] - current_x_checkpoint;
+    float y_end_point = end_point[1] - current_y_checkpoint;
+    float cross_distance = sqrt(pow(x_end_point, 2.0) + pow(y_end_point, 2.0));
+    float num_checks = cross_distance/0.1;
+    float path_increment = cross_distance/num_checks;
+    float max_single_traverse_distance = 2.5;
+    
+    // Check along path for an obstacle.
+    bool path_has_obstacles = false;
+    for(float current_check_increment = 0.0; current_check_increment < cross_distance - 0.25 && path_has_obstacles == false; current_check_increment += path_increment)
+    {
+      int path_point_has_obstacles = obstacle_count;
+      float current_x_pathpoint = x_end_point * (current_check_increment/cross_distance) + current_x_checkpoint;
+      float current_y_pathpoint = y_end_point * (current_check_increment/cross_distance) + current_y_checkpoint;
+      //ROS_INFO("Checking xy points: \t%f\t%f", current_x_pathpoint, current_y_pathpoint);
+      
+      for(int point_id = 0; point_id < map->points.size() && path_point_has_obstacles > 0; point_id++)
+      {
+        float distance_from_point = sqrt(pow(map->points[point_id].x - current_x_pathpoint, 2.0) + pow(map->points[point_id].y - current_y_pathpoint, 2.0));
+        if(distance_from_point < radius_of_zone_to_check && map->points[point_id].r != 255 && map->points[point_id].r != 200 && map->points[point_id].r != 180)
+        {
+          path_point_has_obstacles -= 1;
+        }
+      }
+      pcl::PointXYZRGB temp_point;
+      temp_point.x = current_x_pathpoint;
+      temp_point.y = current_y_pathpoint;
+      temp_point.z = 0.0;
+      temp_point.r = 200;
+      temp_point.g = 200;
+      temp_point.b = 0;
+      map->points.push_back(temp_point);
+      if(path_point_has_obstacles > 0)
+      {
+        //ROS_INFO("Obstacle Found\n");
+        path_has_obstacles = true;
+      }
+    }
+    
+    // If path has an obstacle, perform a path sweep
+    // check to look for a new location which would
+    // produce a point closer to the goal without in
+    // between obstacles.
+    struct new_checkpoint
+    {
+      float x_position;
+      float y_position;
+      float heading;
+    }checkpoint;
+    checkpoint.x_position = 0;
+    checkpoint.y_position = 0;
+    std::vector<new_checkpoint> checkpoint_list;
+    if(path_has_obstacles == true)
+    {
+      //ROS_INFO("Section find new path");
+      tf2::Matrix3x3 possible_path_heading;
+      float deg_increment = 10;
+      float radian_increment = deg_increment/360*M_PI;
+      // Scan for nth number of possible paths in a
+      // right to left sweep with a specific radian
+      // increment from -45 deg to 45 deg.
+      for(float current_radian_increment = -M_PI - yaw; current_radian_increment < M_PI - yaw; current_radian_increment += radian_increment)
+      {
+        possible_path_heading.setRPY(0.0, 0.0, current_radian_increment);
+        
+        float possible_forward_pos = 0.30;
+        std::vector<float> axis_comparison(2, 0);
+        bool has_reached_max_distance = false;
+        
+        float closing_distance = sqrt(pow(fabs(current_x_checkpoint - end_point[0]), 2.0) + pow(fabs(current_y_checkpoint - end_point[1]), 2.0));
+        int possible_path_encountered_obstacle = 0;
+        // Increase distance of point to check in new heading
+        new_checkpoint temp_checkpoint;
+        temp_checkpoint.x_position = current_x_checkpoint;
+        temp_checkpoint.y_position = current_y_checkpoint;
+        while(possible_path_encountered_obstacle <= 0 && closing_distance > 0.5 && mainNodeHandle.ok())
+        {
+          int point_id =0;
+          checkpoint.x_position = current_x_checkpoint;
+          checkpoint.y_position = current_y_checkpoint;
+          possible_path_encountered_obstacle = obstacle_count;
+          axis_comparison[0] = possible_forward_pos*possible_path_heading[0][0] + current_x_checkpoint;
+          axis_comparison[1] = possible_forward_pos*possible_path_heading[1][0] + current_y_checkpoint;
+          
+          // Iterate through map to find whether point exists
+          for(point_id = 0; point_id < map->points.size(); point_id++)
+          {
+            float distance_from_point = sqrt(pow(map->points[point_id].x - axis_comparison[0], 2.0) + pow(map->points[point_id].y - axis_comparison[1], 2.0));
+            if(distance_from_point < radius_of_zone_to_check && map->points[point_id].r != 255 && map->points[point_id].r != 200 && map->points[point_id].r != 180)
+            {
+              possible_path_encountered_obstacle -= 1;
+            }
+          }
+          
+          closing_distance = sqrt(pow(fabs(axis_comparison[0] - end_point[0]), 2.0) + pow(fabs(axis_comparison[1] - end_point[1]), 2.0));
+          if(closing_distance <= 0.5)
+          {
+			reached_closing_distance = true;
+            ROS_INFO("Reached within 0.5m from destination: %f\t%f", axis_comparison[0], axis_comparison[1]);
+            checkpoint_list.push_back(temp_checkpoint);
+          }
+          if(possible_forward_pos > max_single_traverse_distance)
+          {
+            ROS_INFO("Reached max distance test: %f\t%f", axis_comparison[0], axis_comparison[1]);
+            has_reached_max_distance = true;
+          }
+          if(possible_path_encountered_obstacle > 0)
+          {
+            ROS_INFO("Completed single sweep scan: %f", possible_forward_pos);
+            if(static_cast<int>(temp_checkpoint.x_position) != 0)
+            {
+              if(temp_checkpoint.x_position == 0)
+              {
+                checkpoint.x_position = current_x_checkpoint;
+                checkpoint.y_position = current_y_checkpoint;
+                temp_checkpoint = checkpoint;
+              }
+              if(has_reached_max_distance == true && possible_forward_pos > max_single_traverse_distance + 1.0)
+              {
+                possible_forward_pos = max_single_traverse_distance;
+                temp_checkpoint.x_position = possible_forward_pos*possible_path_heading[0][0] + current_x_checkpoint;
+                temp_checkpoint.y_position = possible_forward_pos*possible_path_heading[1][0] + current_y_checkpoint;
+                ROS_INFO("Reached max distance: %f\t%f", temp_checkpoint.x_position, temp_checkpoint.y_position);
+                checkpoint_list.push_back(temp_checkpoint);
+                pcl::PointXYZRGB temp_point;
+                temp_point.x = temp_checkpoint.x_position;
+                temp_point.y = temp_checkpoint.y_position;
+                temp_point.z = 0.0;
+                temp_point.r = 0;
+                temp_point.g = 0;
+                temp_point.b = 180;
+                map->points.push_back(temp_point);
+              }
+              else
+              {
+                possible_forward_pos -= 0.75;
+                temp_checkpoint.x_position = possible_forward_pos*possible_path_heading[0][0] + current_x_checkpoint;
+                temp_checkpoint.y_position = possible_forward_pos*possible_path_heading[1][0] + current_y_checkpoint;
+                ROS_INFO("Reached obstacle: %f\t%f", temp_checkpoint.x_position, temp_checkpoint.y_position);
+                checkpoint_list.push_back(temp_checkpoint);
+                pcl::PointXYZRGB temp_point;
+                temp_point.x = temp_checkpoint.x_position;
+                temp_point.y = temp_checkpoint.y_position;
+                temp_point.z = 0.0;
+                temp_point.r = 180;
+                temp_point.g = 0;
+                temp_point.b = 0;
+                map->points.push_back(temp_point);
+              }
+            }
+          }
+          else
+          {
+            checkpoint.x_position = axis_comparison[0];
+            checkpoint.y_position = axis_comparison[1];
+            if(static_cast<int>(checkpoint.x_position) != 0)
+            {
+              temp_checkpoint = checkpoint;
+            }
+            pcl::PointXYZRGB temp_point;
+            temp_point.x = checkpoint.x_position;
+            temp_point.y = checkpoint.y_position;
+            temp_point.z = 0.0;
+            temp_point.r = 255;
+            temp_point.g = 255;
+            temp_point.b = 255;
+            map->points.push_back(temp_point);
+          }
+          possible_forward_pos += 0.1;
+        }
+      }
+      float closest_to_end_point = -1;
+      float current_to_end_point = 0;
+      float distance_to_point = 0;
+      for(int checkpoint_id = 0; checkpoint_id < checkpoint_list.size(); checkpoint_id++)
+      {
+        current_to_end_point = sqrt(pow(end_point[0] - checkpoint_list[checkpoint_id].x_position, 2.0) + pow(end_point[1] - checkpoint_list[checkpoint_id].y_position, 2.0));
+        distance_to_point = sqrt(pow(center_point.x - checkpoint_list[checkpoint_id].x_position, 2.0) + pow(center_point.y - checkpoint_list[checkpoint_id].y_position, 2.0));
+        ROS_INFO("Distance compare: \t%f\t%f", current_to_end_point, closest_to_end_point);
+        if(closest_to_end_point < 0 && distance_to_point > 1.0)
+        {
+          closest_to_end_point = current_to_end_point;
+          checkpoint.x_position = checkpoint_list[checkpoint_id].x_position;
+          checkpoint.y_position = checkpoint_list[checkpoint_id].y_position;
+        }
+        else if(current_to_end_point < closest_to_end_point && distance_to_point > 1.0)
+        {
+          closest_to_end_point = current_to_end_point;
+          checkpoint.x_position = checkpoint_list[checkpoint_id].x_position;
+          checkpoint.y_position = checkpoint_list[checkpoint_id].y_position;
+          ROS_INFO("Target point: \t%f\t%f", end_point[0], end_point[1]);
+          ROS_INFO("Next close xy checkpoint found: \t%f\t%f", checkpoint.x_position, checkpoint.y_position);
+        }
+      }
+      ROS_INFO("\nClosest xy checkpoint found: \t%f\t%f", checkpoint.x_position, checkpoint.y_position);
+      pcl::PointXYZRGB temp_point;
+      temp_point.x = checkpoint.x_position;
+      temp_point.y = checkpoint.y_position;
+      temp_point.z = 0.0;
+      temp_point.r = 200;
+      temp_point.g = 200;
+      temp_point.b = 0;
+      map->points.push_back(temp_point);
+      
+      // Take new_path checkpoint and add it to the checkpoint
+      // list. Then set the new checkpoint origin to the
+      // just newly created checkpoint
+      current_x_checkpoint = checkpoint.x_position;
+      current_y_checkpoint = checkpoint.y_position;
+      std::vector<float> temp_checkpoint(3, 0);
+      temp_checkpoint[0] = checkpoint.x_position;
+      temp_checkpoint[1] = checkpoint.y_position;
+      path_point_list.push_back(temp_checkpoint);
+    }
+    // If the current path doesn't have an obstacle
+    // just add the goal point to the path list and
+    // declare the new path check points clears all
+    // obstacles
+    else
+    {
+      ROS_INFO("Section all obstacles dodged: \t%f\t%f", end_point[0], end_point[1]);
+      cleared_obstacles = true;
+    }
+  }
+  path_point_list.push_back(end_point);
+  pcl::PointXYZRGB temp_point;
+  temp_point.x = end_point[0];
+  temp_point.y = end_point[1];
+  temp_point.z = 0.0;
+  temp_point.r = 0;
+  temp_point.g = 200;
+  temp_point.b = 0;
+  map->points.push_back(temp_point);
+  
+  return path_point_list;
+}
+
 void
 Path_Generation::traverseToPoint(std::vector<float> end_point, bool arms_disabled)
 {
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   X_Publisher x_publisher;
   
@@ -1529,7 +2125,7 @@ Path_Generation::traverseToPoint(std::vector<float> end_point, bool arms_disable
 void
 Path_Generation::traversePointList(std::vector<std::vector<float>> end_point, bool arms_disabled)
 {
-  tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   X_Publisher x_publisher;
   

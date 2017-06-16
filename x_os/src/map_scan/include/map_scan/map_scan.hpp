@@ -101,6 +101,18 @@ class Map_Scan
     HandleCorrectFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
     bool
     CableCorrectFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    bool
+    LightBlueFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    LightBlueRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    bool
+    TealFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    TealRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    overHangHabFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    overHangTaskThreeFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
   
   public:
     Map_Scan();
@@ -169,6 +181,8 @@ class Map_Scan
     YellowFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
     void
     generateHabitat(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    lowTaskThreeScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
 };
 
 #endif

@@ -90,7 +90,7 @@ Map_Scan::generateHabitat(pcl::PointCloud<pcl::PointXYZRGB>* input)
   ROS_INFO("Corrected Heading: %f", heading);
   
   std::vector<float> end_point(3, 0);
-  end_point[0] = 6.0;
+  end_point[0] = 5.0;
   end_point[1] = 0.0;
   end_point[2] = 0.0;
   tf2::Matrix3x3 rotation;
@@ -121,7 +121,7 @@ Map_Scan::generateHabitat(pcl::PointCloud<pcl::PointXYZRGB>* input)
         tf2::Matrix3x3 new_rotation;
         new_rotation.setRPY(0.0, 0.0, angle);
         float point_distance = ground_space.x*new_rotation[0][0] + ground_space.y*new_rotation[0][1];
-        if(point_distance > 6)
+        if(point_distance > 5)
         {
           is_out_bounds = true;
         }
@@ -132,9 +132,9 @@ Map_Scan::generateHabitat(pcl::PointCloud<pcl::PointXYZRGB>* input)
         tmp_space.x = task_point[0] + ground_space.x;
         tmp_space.y = task_point[1] + ground_space.y;
         tmp_space.z = right_foot_sole.transform.translation.z;
-        tmp_space.r = 200;
-        tmp_space.g = 200;
-        tmp_space.b = 200;
+        tmp_space.r = 30;
+        tmp_space.g = 30;
+        tmp_space.b = 30;
         input->points.push_back(tmp_space);
       }
     }
@@ -390,6 +390,124 @@ Map_Scan::BlueFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
   cloud_point.z = cloud_point.z / numBluePoints;
   cloud_point.r = 0;
   cloud_point.g = 0;
+  cloud_point.b = 200;
+  
+  if(numBluePoints > 0)
+  {
+    input->points.push_back(cloud_point);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+void
+Map_Scan::LightBlueRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
+{
+  for(unsigned long point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    if(input->points[point_id].g == 100 && input->points[point_id].b == 200 && input->points[point_id].r == 0)
+    {
+      input->points.erase(input->points.begin()+point_id);
+      point_id--;
+    }
+  }
+}
+
+bool
+Map_Scan::LightBlueFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
+{
+  pcl::PointXYZRGB cloud_point;
+  cloud_point.x = 0.0;
+  cloud_point.y = 0.0;
+  cloud_point.z = 0.0;
+  
+  int numBluePoints = 0;
+  for(unsigned long point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    if(input->points[point_id].g == 100 && input->points[point_id].b == 200 && input->points[point_id].r == 0)
+    {
+      cloud_point.x += input->points[point_id].x;
+      cloud_point.y += input->points[point_id].y;
+      cloud_point.z += input->points[point_id].z;
+      numBluePoints++;
+    }
+  }
+  ROS_INFO("Num Points: %i", numBluePoints);
+  for(unsigned long point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    if(input->points[point_id].g == 100 && input->points[point_id].b == 200 && input->points[point_id].r == 0)
+    {
+      input->points.erase(input->points.begin()+point_id);
+      point_id--;
+    }
+  }
+  cloud_point.x = cloud_point.x / numBluePoints;
+  cloud_point.y = cloud_point.y / numBluePoints;
+  cloud_point.z = cloud_point.z / numBluePoints;
+  cloud_point.r = 0;
+  cloud_point.g = 100;
+  cloud_point.b = 200;
+  
+  if(numBluePoints > 0)
+  {
+    input->points.push_back(cloud_point);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+void
+Map_Scan::TealRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
+{
+  for(unsigned long point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    if(input->points[point_id].g == 200 && input->points[point_id].b == 200 && input->points[point_id].r == 50)
+    {
+      input->points.erase(input->points.begin()+point_id);
+      point_id--;
+    }
+  }
+}
+
+bool
+Map_Scan::TealFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
+{
+  pcl::PointXYZRGB cloud_point;
+  cloud_point.x = 0.0;
+  cloud_point.y = 0.0;
+  cloud_point.z = 0.0;
+  
+  int numBluePoints = 0;
+  for(unsigned long point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    if(input->points[point_id].g == 200 && input->points[point_id].b == 200 && input->points[point_id].r == 50)
+    {
+      cloud_point.x += input->points[point_id].x;
+      cloud_point.y += input->points[point_id].y;
+      cloud_point.z += input->points[point_id].z;
+      numBluePoints++;
+    }
+  }
+  ROS_INFO("Num Points: %i", numBluePoints);
+  for(unsigned long point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    if(input->points[point_id].g == 200 && input->points[point_id].b == 200 && input->points[point_id].r == 50)
+    {
+      input->points.erase(input->points.begin()+point_id);
+      point_id--;
+    }
+  }
+  cloud_point.x = cloud_point.x / numBluePoints;
+  cloud_point.y = cloud_point.y / numBluePoints;
+  cloud_point.z = cloud_point.z / numBluePoints;
+  cloud_point.r = 50;
+  cloud_point.g = 200;
   cloud_point.b = 200;
   
   if(numBluePoints > 0)
@@ -958,6 +1076,23 @@ Map_Scan::overHangFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
 }
 
 void
+Map_Scan::overHangHabFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
+{
+  for(int point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    for(int over_hang_point_id = 0; over_hang_point_id < this->raw_copy_scan.points.size(); over_hang_point_id++)
+    {
+      float distance_comparison = sqrt(pow(this->raw_copy_scan.points[over_hang_point_id].x - input->points[point_id].x, 2.0) + pow(this->raw_copy_scan.points[over_hang_point_id].y - input->points[point_id].y, 2.0));
+      if(distance_comparison < 0.25)
+      {
+        input->points.erase(input->points.begin() + point_id);
+        point_id -= 1;
+      }
+    }
+  }
+}
+
+void
 Map_Scan::overHangBlueFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
 {
   pcl::PointXYZRGB cloud_point;
@@ -987,6 +1122,43 @@ Map_Scan::overHangBlueFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
   {
     float distance_comparison = sqrt(pow(cloud_point.x - input->points[point_id].x, 2.0) + pow(cloud_point.y - input->points[point_id].y, 2.0));
     if(distance_comparison < 0.50 && cloud_point.b != input->points[point_id].b && 200 != input->points[point_id].r)
+    {
+      input->points.erase(input->points.begin() + point_id);
+      point_id -= 1;
+    }
+  }
+}
+
+void
+Map_Scan::overHangTaskThreeFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
+{
+  pcl::PointXYZRGB cloud_point;
+  cloud_point.x = 0.0;
+  cloud_point.y = 0.0;
+  cloud_point.z = 0.0;
+  
+  int numPoints = 0;
+  for(unsigned long point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    if((input->points[point_id].g == 100 && input->points[point_id].b == 200 && input->points[point_id].r == 0) && (input->points[point_id].g == 200 && input->points[point_id].b == 200 && input->points[point_id].r == 50))
+    {
+      cloud_point.x += input->points[point_id].x;
+      cloud_point.y += input->points[point_id].y;
+      cloud_point.z += input->points[point_id].z;
+      numPoints++;
+    }
+  }
+  cloud_point.x = cloud_point.x / numPoints;
+  cloud_point.y = cloud_point.y / numPoints;
+  cloud_point.z = cloud_point.z / numPoints;
+  cloud_point.r = 0;
+  cloud_point.g = 0;
+  cloud_point.b = 200;
+  
+  for(int point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    float distance_comparison = sqrt(pow(cloud_point.x - input->points[point_id].x, 2.0) + pow(cloud_point.y - input->points[point_id].y, 2.0));
+    if(distance_comparison < 0.750 && !((input->points[point_id].g == 100 && input->points[point_id].b == 200 && input->points[point_id].r == 0) && (input->points[point_id].g == 200 && input->points[point_id].b == 200 && input->points[point_id].r == 50)))
     {
       input->points.erase(input->points.begin() + point_id);
       point_id -= 1;
@@ -1458,6 +1630,44 @@ Map_Scan::taskThreeFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointX
           input->points[point_id].z = NAN;
         }
       }
+      if(input->points[point_id].r > 10 && input->points[point_id].g > 160 && input->points[point_id].b > 160 && input->points[point_id].r < 70 && input->points[point_id].g < 230 && input->points[point_id].b < 230)
+      {
+        if(temp_pos[2]+camera.transform.translation.z < 2.0+right_foot_sole.transform.translation.z && temp_pos[2]+camera.transform.translation.z > 0.5+right_foot_sole.transform.translation.z)
+        {
+          temp_pos[2] = -camera.transform.translation.z - 5.0;
+          input->points[point_id].x = temp_pos[0]*visual_rotation_inverse[0][0] + temp_pos[1]*visual_rotation_inverse[0][1] + temp_pos[2]*visual_rotation_inverse[0][2];
+          input->points[point_id].y = temp_pos[0]*visual_rotation_inverse[1][0] + temp_pos[1]*visual_rotation_inverse[1][1] + temp_pos[2]*visual_rotation_inverse[1][2];
+          input->points[point_id].z = temp_pos[0]*visual_rotation_inverse[2][0] + temp_pos[1]*visual_rotation_inverse[2][1] + temp_pos[2]*visual_rotation_inverse[2][2];
+          input->points[point_id].r = 50;
+          input->points[point_id].g = 200;
+          input->points[point_id].b = 200;
+        }
+        else
+        {
+          input->points[point_id].x = NAN;
+          input->points[point_id].y = NAN;
+          input->points[point_id].z = NAN;
+        }
+      }
+      if(input->points[point_id].r < 50 && input->points[point_id].g > 60 && input->points[point_id].b > 180 && input->points[point_id].g < 120 && input->points[point_id].b < 220)
+      {
+        if(temp_pos[2]+camera.transform.translation.z < 2.0+right_foot_sole.transform.translation.z && temp_pos[2]+camera.transform.translation.z > 0.5+right_foot_sole.transform.translation.z)
+        {
+          temp_pos[2] = -camera.transform.translation.z - 5.0;
+          input->points[point_id].x = temp_pos[0]*visual_rotation_inverse[0][0] + temp_pos[1]*visual_rotation_inverse[0][1] + temp_pos[2]*visual_rotation_inverse[0][2];
+          input->points[point_id].y = temp_pos[0]*visual_rotation_inverse[1][0] + temp_pos[1]*visual_rotation_inverse[1][1] + temp_pos[2]*visual_rotation_inverse[1][2];
+          input->points[point_id].z = temp_pos[0]*visual_rotation_inverse[2][0] + temp_pos[1]*visual_rotation_inverse[2][1] + temp_pos[2]*visual_rotation_inverse[2][2];
+          input->points[point_id].r = 0;
+          input->points[point_id].g = 100;
+          input->points[point_id].b = 200;
+        }
+        else
+        {
+          input->points[point_id].x = NAN;
+          input->points[point_id].y = NAN;
+          input->points[point_id].z = NAN;
+        }
+      }
     }
     if(temp_pos[2] > -camera.transform.translation.z - 5.0+0.01 || temp_pos[2] < -camera.transform.translation.z - 5.0-0.01)
     {
@@ -1485,6 +1695,24 @@ Map_Scan::taskThreeFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointX
         temp_point.b = input->points[point_id].b;
       }
       if(input->points[point_id].g == 10 && input->points[point_id].r == 10 && input->points[point_id].b == 10)
+      {
+        temp_point.x = temp_pos_height[0]+camera.transform.translation.x;
+        temp_point.y = temp_pos_height[1]+camera.transform.translation.y;
+        temp_point.z = 0.0;
+        temp_point.r = input->points[point_id].r;
+        temp_point.g = input->points[point_id].g;
+        temp_point.b = input->points[point_id].b;
+      }
+      if(input->points[point_id].g == 200 && input->points[point_id].r == 50 && input->points[point_id].b == 200)
+      {
+        temp_point.x = temp_pos_height[0]+camera.transform.translation.x;
+        temp_point.y = temp_pos_height[1]+camera.transform.translation.y;
+        temp_point.z = 0.0;
+        temp_point.r = input->points[point_id].r;
+        temp_point.g = input->points[point_id].g;
+        temp_point.b = input->points[point_id].b;
+      }
+      if(input->points[point_id].g == 100 && input->points[point_id].r == 0 && input->points[point_id].b == 200)
       {
         temp_point.x = temp_pos_height[0]+camera.transform.translation.x;
         temp_point.y = temp_pos_height[1]+camera.transform.translation.y;
@@ -1566,7 +1794,6 @@ Map_Scan::taskTwoHandleFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::Po
       temp_pos[2] = input->points[point_id].x*visual_rotation[2][0] + input->points[point_id].y*visual_rotation[2][1] + input->points[point_id].z*visual_rotation[2][2];
       
       float distance_comparison = sqrt(pow(button_point[0] - (temp_pos[0]+camera.transform.translation.x), 2.0) + pow(button_point[1] - (temp_pos[1]+camera.transform.translation.y), 2.0));
-      float heading = asin((button_point[1] - (temp_pos[1]+camera.transform.translation.y))/distance_comparison);
       // Non Floor Filter
       if(distance_comparison < 0.3 && temp_pos[2]+camera.transform.translation.z > button_point[2] + 0.01 && temp_pos[2]+camera.transform.translation.z < button_point[2] + 0.05)
       {
@@ -1579,7 +1806,21 @@ Map_Scan::taskTwoHandleFilter(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::Po
         input->points[point_id].b = 200;
         num_handle_points++;
       }
-      if(distance_comparison < 2.0 && distance_comparison > 1.5 && input->points[point_id].r < 15 && input->points[point_id].g < 15 && input->points[point_id].b < 15 && heading < M_PI/2 - yaw/2 && heading > -M_PI/2 - yaw/2)
+      
+      float distance_to_trailer = sqrt(pow(center_point.x - (temp_pos[0]+camera.transform.translation.x), 2.0) + pow(center_point.y - (temp_pos[1]+camera.transform.translation.y), 2.0));
+      float heading_to_trailer = asin((center_point.y - (temp_pos[1]+camera.transform.translation.y))/distance_to_trailer);
+      if((temp_pos[0]+camera.transform.translation.x) - center_point.x <= 0)
+      {
+        if((temp_pos[1]+camera.transform.translation.y) - center_point.y <= 0)
+        {
+          heading_to_trailer = -M_PI-heading_to_trailer;
+        }
+        else
+        {
+          heading_to_trailer = M_PI-heading_to_trailer;
+        }
+      }
+      if(distance_comparison < 2.0 && distance_comparison > 1.5 && input->points[point_id].r < 15 && input->points[point_id].g < 15 && input->points[point_id].b < 15 && heading_to_trailer < M_PI/2 - yaw/2 && heading_to_trailer > -M_PI/2 - yaw/2)
       {
         if(temp_pos[2]+camera.transform.translation.z < 1.25+right_foot_sole.transform.translation.z && temp_pos[2]+camera.transform.translation.z > 0.75+right_foot_sole.transform.translation.z)
         {
@@ -1716,7 +1957,7 @@ void
 Map_Scan::leftScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
@@ -1768,7 +2009,7 @@ void
 Map_Scan::rightScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
@@ -1820,7 +2061,7 @@ void
 Map_Scan::lowScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
@@ -1872,7 +2113,7 @@ void
 Map_Scan::forwardScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
@@ -1942,6 +2183,9 @@ Map_Scan::wideScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 void
 Map_Scan::leftHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
   neck_msg.unique_id = 1;
   std::vector<float> direction(2, 0);
@@ -1956,9 +2200,6 @@ Map_Scan::leftHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_msg = trajectory_generation.appendTrajectoryPoint(1.5, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
   
-  // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
-  tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
@@ -1983,7 +2224,7 @@ Map_Scan::leftHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   leaf_size[1] = 0.35;
   leaf_size[2] = 0.35;
   *map = noiseFilter(leaf_size, map);
-  overHangFilter(map);
+  overHangHabFilter(map);
   leaf_size[0] = 0.35;
   leaf_size[1] = 0.35;
   leaf_size[2] = 0.35;
@@ -1993,6 +2234,9 @@ Map_Scan::leftHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 void
 Map_Scan::rightHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
   neck_msg.unique_id = 1;
   std::vector<float> direction(2, 0);
@@ -2007,9 +2251,6 @@ Map_Scan::rightHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_msg = trajectory_generation.appendTrajectoryPoint(1.5, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
   
-  // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
-  tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
@@ -2034,7 +2275,7 @@ Map_Scan::rightHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   leaf_size[1] = 0.35;
   leaf_size[2] = 0.35;
   *map = noiseFilter(leaf_size, map);
-  overHangFilter(map);
+  overHangHabFilter(map);
   leaf_size[0] = 0.35;
   leaf_size[1] = 0.35;
   leaf_size[2] = 0.35;
@@ -2044,12 +2285,15 @@ Map_Scan::rightHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 void
 Map_Scan::lowHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
   neck_msg.unique_id = 1;
   std::vector<float> direction(2, 0);
   std::vector<float> neck_pos(3, 0);
   std::vector<float> neck_ang_vel(3, 0);
-  direction[0] = -0.8;
+  direction[0] = -1.2;
   direction[1] = 0.0;
   neck_pos[0] = 0.431 - direction[0]*0.431/(M_PI/2);
   neck_pos[1] = direction[1];
@@ -2058,9 +2302,6 @@ Map_Scan::lowHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_msg = trajectory_generation.appendTrajectoryPoint(1.5, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
   
-  // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
-  tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
@@ -2085,7 +2326,7 @@ Map_Scan::lowHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   leaf_size[1] = 0.35;
   leaf_size[2] = 0.35;
   *map = noiseFilter(leaf_size, map);
-  overHangFilter(map);
+  overHangHabFilter(map);
   leaf_size[0] = 0.35;
   leaf_size[1] = 0.35;
   leaf_size[2] = 0.35;
@@ -2095,12 +2336,15 @@ Map_Scan::lowHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 void
 Map_Scan::forwardHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
   neck_msg.unique_id = 1;
   std::vector<float> direction(2, 0);
   std::vector<float> neck_pos(3, 0);
   std::vector<float> neck_ang_vel(3, 0);
-  direction[0] = -0.4;
+  direction[0] = -0.1;
   direction[1] = 0.0;
   neck_pos[0] = 0.431 - direction[0]*0.431/(M_PI/2);
   neck_pos[1] = direction[1];
@@ -2109,9 +2353,6 @@ Map_Scan::forwardHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_msg = trajectory_generation.appendTrajectoryPoint(1.5, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
   
-  // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
-  tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Duration(3.0).sleep();
   camera_scan_callback.callAvailable(ros::WallDuration());
   
@@ -2136,7 +2377,7 @@ Map_Scan::forwardHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   leaf_size[1] = 0.35;
   leaf_size[2] = 0.35;
   *map = noiseFilter(leaf_size, map);
-  overHangFilter(map);
+  overHangHabFilter(map);
   leaf_size[0] = 0.35;
   leaf_size[1] = 0.35;
   leaf_size[2] = 0.35;
@@ -2155,7 +2396,7 @@ Map_Scan::wideHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   lowHabScan(map);
   forwardHabScan(map);
   
-  overHangFilter(map);
+  overHangHabFilter(map);
   std::vector<float> leaf_size(3, 0);
   leaf_size[0] = 0.35;
   leaf_size[1] = 0.35;
@@ -2166,6 +2407,9 @@ Map_Scan::wideHabScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 void
 Map_Scan::narrowScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
   neck_msg.unique_id = 1;
   std::vector<float> direction(2, 0);
@@ -2195,9 +2439,6 @@ Map_Scan::narrowScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   neck_msg = trajectory_generation.appendTrajectoryPoint(4.0, neck_pos, neck_ang_vel, neck_msg);
   trajectoryNeckPublisher.publish(neck_msg);
   
-  // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
-  tf2_ros::TransformListener tfListener(tfBuffer);
   for(int num_turns = 0; num_turns < 2; num_turns++)
   {
     ros::Duration(2.625).sleep();
@@ -2237,7 +2478,7 @@ void
 Map_Scan::simpleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Duration(3.0).sleep();
   
@@ -2275,7 +2516,7 @@ void
 Map_Scan::simpleTaskOneScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Duration(3.0).sleep();
   
@@ -2295,7 +2536,7 @@ Map_Scan::simpleTaskTwoScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   BlueRemovalFilter(map);
   GoldRemovalFilter(map);
   // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
@@ -2324,7 +2565,7 @@ void
 Map_Scan::simpleTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Duration(2.0).sleep();
   
@@ -2362,8 +2603,34 @@ Map_Scan::wideTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   BlackRemovalFilter(map);
   
   // Sets up buffer to recieve relative frame positions.
-  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::Buffer tfBuffer(ros::Duration(3.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
+  
+  ros::Duration(2.5).sleep();
+  // Sets up buffer to recieve relative frame positions.
+  camera_scan_callback.callAvailable(ros::WallDuration());
+  // Point Cloud for map.
+  taskTwoFilter(&tfBuffer, &this->raw_scan, map);
+  bool tmp = RedFilter(map);
+  bool found_button = tmp;
+  if(found_button == true)
+  {
+    ros::Duration(0.5).sleep();
+    camera_scan_callback.callAvailable(ros::WallDuration());
+    std::vector<float> red_button_point(3, 0);
+    // Locate task two panel button
+    for(int point_id = 0; point_id < map->points.size(); point_id++)
+    {
+      if(map->points[point_id].b == 0 && map->points[point_id].g == 0 && map->points[point_id].r == 200)
+      {
+        red_button_point[0] = map->points[point_id].x;
+        red_button_point[1] = map->points[point_id].y;
+        red_button_point[2] = map->points[point_id].z;
+      }
+    }
+    // Point Cloud for map.
+    taskTwoHandleFilter(&tfBuffer, &this->raw_scan, map, red_button_point);
+  }
   
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg_left;
   neck_msg_left.unique_id = 1;
@@ -2383,7 +2650,11 @@ Map_Scan::wideTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   camera_scan_callback.callAvailable(ros::WallDuration());
   // Point Cloud for map.
   taskTwoFilter(&tfBuffer, &this->raw_scan, map);
-  bool found_button = RedFilter(map);
+  tmp = RedFilter(map);
+  if(found_button == false)
+  {
+    found_button = tmp;
+  }
   if(found_button == true)
   {
     ros::Duration(0.5).sleep();
@@ -2418,7 +2689,50 @@ Map_Scan::wideTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   camera_scan_callback.callAvailable(ros::WallDuration());
   // Point Cloud for map.
   taskTwoFilter(&tfBuffer, &this->raw_scan, map);
-  found_button = RedFilter(map);
+  tmp = RedFilter(map);
+  if(found_button == false)
+  {
+    found_button = tmp;
+  }
+  if(found_button == true)
+  {
+    ros::Duration(0.5).sleep();
+    camera_scan_callback.callAvailable(ros::WallDuration());
+    std::vector<float> red_button_point(3, 0);
+    // Locate task two panel button
+    for(int point_id = 0; point_id < map->points.size(); point_id++)
+    {
+      if(map->points[point_id].b == 0 && map->points[point_id].g == 0 && map->points[point_id].r == 200)
+      {
+        red_button_point[0] = map->points[point_id].x;
+        red_button_point[1] = map->points[point_id].y;
+        red_button_point[2] = map->points[point_id].z;
+      }
+    }
+    // Point Cloud for map.
+    taskTwoHandleFilter(&tfBuffer, &this->raw_scan, map, red_button_point);
+  }
+  
+  ihmc_msgs::NeckTrajectoryRosMessage neck_msg_left_return;
+  neck_msg_left_return.unique_id = 1;
+  direction[0] = -0.5;
+  direction[1] = 0.8;
+  neck_pos[0] = 0.431 - direction[0]*0.431/(M_PI/2);
+  neck_pos[1] = direction[1];
+  neck_pos[2] = -0.431 - direction[0]*0.431/(M_PI/2);
+  neck_ang_vel[1] = 0.0;
+  neck_msg_left_return = trajectory_generation.appendTrajectoryPoint(1.0, neck_pos, neck_ang_vel, neck_msg_left_return);
+  trajectoryNeckPublisher.publish(neck_msg_left_return);
+  ros::Duration(2.5).sleep();
+  // Sets up buffer to recieve relative frame positions.
+  camera_scan_callback.callAvailable(ros::WallDuration());
+  // Point Cloud for map.
+  taskTwoFilter(&tfBuffer, &this->raw_scan, map);
+  tmp = RedFilter(map);
+  if(found_button == false)
+  {
+    found_button = tmp;
+  }
   if(found_button == true)
   {
     ros::Duration(0.5).sleep();
@@ -2453,7 +2767,11 @@ Map_Scan::wideTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   camera_scan_callback.callAvailable(ros::WallDuration());
   // Point Cloud for map.
   taskTwoFilter(&tfBuffer, &this->raw_scan, map);
-  found_button = RedFilter(map);
+  tmp = RedFilter(map);
+  if(found_button == false)
+  {
+    found_button = tmp;
+  }
   if(found_button == true)
   {
     ros::Duration(0.5).sleep();
@@ -2486,6 +2804,8 @@ Map_Scan::wideTaskThreeComponentsScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   GoldRemovalFilter(map);
   YellowRemovalFilter(map);
   BlackRemovalFilter(map);
+  TealRemovalFilter(map);
+  LightBlueRemovalFilter(map);
   
   // Sets up buffer to recieve relative frame positions.
   tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
@@ -2544,7 +2864,7 @@ Map_Scan::wideTaskThreeComponentsScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   
   ihmc_msgs::NeckTrajectoryRosMessage neck_msg_straignt;
   neck_msg_straignt.unique_id = 1;
-  direction[0] = -0.4;
+  direction[0] = -0.1;
   direction[1] = 0.0;
   neck_pos[0] = 0.431 - direction[0]*0.431/(M_PI/2);
   neck_pos[1] = direction[1];
@@ -2558,6 +2878,9 @@ Map_Scan::wideTaskThreeComponentsScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   // Point Cloud for map.
   taskThreeFilter(&tfBuffer, &this->raw_scan, map);
   
+  TealFilter(map);
+  LightBlueFilter(map);
+  overHangTaskThreeFilter(map);
 }
 
 void
@@ -2641,6 +2964,43 @@ Map_Scan::lowTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   taskTwoHandleFilter(&tfBuffer, &this->raw_scan, map, red_button_point);
   BlueFilter(map);
   HandleCorrectFilter(map);
+}
+
+void
+Map_Scan::lowTaskThreeScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
+{
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
+  RedRemovalFilter(map);
+  BlueRemovalFilter(map);
+  GoldRemovalFilter(map);
+  YellowRemovalFilter(map);
+  BlackRemovalFilter(map);
+  TealRemovalFilter(map);
+  LightBlueRemovalFilter(map);
+  
+  ihmc_msgs::NeckTrajectoryRosMessage neck_msg_low;
+  neck_msg_low.unique_id = 1;
+  std::vector<float> direction(2, 0);
+  std::vector<float> neck_pos(3, 0);
+  std::vector<float> neck_ang_vel(3, 0);
+  direction[0] = -0.8;
+  direction[1] = 0.0;
+  neck_pos[0] = 0.431 - direction[0]*0.431/(M_PI/2);
+  neck_pos[1] = direction[1];
+  neck_pos[2] = -0.431 - direction[0]*0.431/(M_PI/2);
+  neck_ang_vel[1] = 0.0;
+  neck_msg_low = trajectory_generation.appendTrajectoryPoint(1.0, neck_pos, neck_ang_vel, neck_msg_low);
+  trajectoryNeckPublisher.publish(neck_msg_low);
+  ros::Duration(2.5).sleep();
+  // Sets up buffer to recieve relative frame positions.
+  camera_scan_callback.callAvailable(ros::WallDuration());
+  // Point Cloud for map.
+  taskThreeFilter(&tfBuffer, &this->raw_scan, map);
+  TealFilter(map);
+  LightBlueFilter(map);
+  BlackFilter(map);
 }
 
 void

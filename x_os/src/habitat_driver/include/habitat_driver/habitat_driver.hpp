@@ -25,6 +25,9 @@ class Habitat_Driver
     Trajectory_Generation trajectory_generation;
     Gait_Generation gait_generation;
     
+    ros::Publisher trajectoryRightHandPublisher;
+    ros::Publisher trajectoryLeftHandPublisher;
+    
     const bool LEFT = 0;
     const bool RIGHT = 1;
     const std::string WORLD = "world";
@@ -53,6 +56,12 @@ class Habitat_Driver
     enterHab();
     std::vector<float>
     getArmAtStair(bool robot_side);
+    void
+    alignToDetector(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    pickUpDetector(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    std::vector<float>
+    grabComponentTrajectory(bool robot_side_arm, int step_num);
 };
 
 #endif

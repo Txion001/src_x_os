@@ -52,7 +52,7 @@ class Solar_Components_Driver
     void
     grabPanel(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
-    carryPanel();
+    carryPanel(pcl::PointCloud<pcl::PointXYZRGB>* map);
     std::vector<float>
     grabPanelTrajectory(bool robot_side_arm, int step_num);
     std::vector<float>
@@ -80,7 +80,11 @@ class Solar_Components_Driver
     void
     grabCable();
     void
+    grabCable(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
     resetStance(std::vector<float> next_point);
+    std::vector<float>
+    getArmAtRest(bool robot_side);
 };
 
 #endif

@@ -149,6 +149,22 @@ Path_Generation::findMapEndPoint(pcl::PointCloud<pcl::PointXYZRGB>* map)
       end_point[1] = map->points[point_id].y;
     }
   }
+  std::vector<float> tmp_point(3, 0);
+  int num_points = 0;
+  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  {
+    distance = sqrt(pow(fabs(map->points[point_id].x-end_point[0]), 2.0) + pow(fabs(map->points[point_id].y-end_point[1]), 2.0));
+    
+    if(distance < 1.0)
+    {
+      tmp_point[0] += map->points[point_id].x;
+      tmp_point[1] += map->points[point_id].y;
+      num_points++;
+    }
+  }
+  end_point[0] = tmp_point[0]/num_points;
+  end_point[1] = tmp_point[1]/num_points;
+  
   return end_point;
 }
 
@@ -462,7 +478,7 @@ Path_Generation::findMapNextPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, float 
     distance_to_travel -= 0.1;
   }
   
-  std::vector<float> end_point(3, 0);
+  std::vector<float> end_point(4, 0);
   std::vector<float> tmp_point(3, 0);
   tmp_point = findMapEndPoint(map);
   ROS_INFO("New checkpoint found XYZ:\t%f\t%f\t%f", tmp_point[0], tmp_point[1], tmp_point[2]);
@@ -500,6 +516,12 @@ Path_Generation::findMapNextPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, float 
   end_point[0] = tmp_point[0]/num_checkpoints;
   end_point[1] = tmp_point[1]/num_checkpoints;
   ROS_INFO("New checkpoint found XYZ:\t%f\t%f\t%f", end_point[0], end_point[1], end_point[2]);
+  
+  tmp_point = findMapEndPoint(map);
+  float end_final_distance = sqrt(pow(fabs(tmp_point[0] - end_point[0]), 2.0) + pow(fabs(tmp_point[1] - end_point[1]), 2.0));
+  heading = asin((tmp_point[1] - end_point[1])/end_final_distance);
+  end_point[3] = heading;
+  
   return end_point;
 }
 
@@ -604,6 +626,7 @@ Path_Generation::findTaskTwoPanelPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
   center_point.y = center_point.y/2;
   center_point.z = center_point.z/2;
   std::vector<float> handle_point(3, 0);
+  std::vector<float> trailer_point(3, 0);
   std::vector<float> task_point(4, 0);
   task_point[0] = 0;
   task_point[1] = 0;
@@ -621,51 +644,22 @@ Path_Generation::findTaskTwoPanelPoint(pcl::PointCloud<pcl::PointXYZRGB>* map, s
       handle_point[1] = map->points[point_id].y;
       handle_point[2] = map->points[point_id].z;
     }
+    else if(map->points[point_id].b == 10 && map->points[point_id].g == 10 && map->points[point_id].r == 10)
+    {
+      found_panel = true;
+      trailer_point[0] = map->points[point_id].x;
+      trailer_point[1] = map->points[point_id].y;
+      trailer_point[2] = map->points[point_id].z;
+    }
   }
   ROS_INFO("XYZ location:\t%f\t%f\t%f", handle_point[0], handle_point[1], handle_point[2]);
-  int num_adds = 0;
-  for(int point_id = 0; point_id < map->points.size(); point_id++)
-  {
-    float near_zone = sqrt(pow(fabs(handle_point[0] - map->points[point_id].x), 2.0) + pow(fabs(handle_point[1] - map->points[point_id].y), 2.0));
-    if(near_zone < 0.80 && ((map->points[point_id].b != 0 && map->points[point_id].g != 0 && map->points[point_id].r != 200) || (map->points[point_id].b != 200 && map->points[point_id].g != 0 && map->points[point_id].r != 0)))
-    {
-      task_point[0] += map->points[point_id].x;
-      task_point[1] += map->points[point_id].y;
-      task_point[2] += map->points[point_id].z;
-      num_adds++;
-      //ROS_INFO("XYZ Point:\t%f\t%f",  map->points[point_id].x, map->points[point_id].y);
-    }
-  }
-  task_point[0] = task_point[0] / num_adds;
-  task_point[1] = task_point[1] / num_adds;
-  task_point[2] = task_point[2] / num_adds;
+  ROS_INFO("XYZ location:\t%f\t%f\t%f", trailer_point[0], trailer_point[1], trailer_point[2]);
   
-  std::vector<float> second_task_point(3, 0);
-  second_task_point[0] = 0;
-  second_task_point[1] = 0;
-  second_task_point[2] = 0;
-  num_adds = 0;
-  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  float handle_seperation = sqrt(pow(fabs(trailer_point[0] - handle_point[0]), 2.0) + pow(fabs(trailer_point[1] - handle_point[1]), 2.0));
+  heading = asin((trailer_point[1] - handle_point[1])/handle_seperation);
+  if(trailer_point[0] - handle_point[0] <= 0)
   {
-    float near_zone = sqrt(pow(fabs(task_point[0] - map->points[point_id].x), 2.0) + pow(fabs(task_point[1] - map->points[point_id].y), 2.0));
-    if(near_zone < 0.90 && ((map->points[point_id].b != 0 && map->points[point_id].g != 0 && map->points[point_id].r != 200) || (map->points[point_id].b != 200 && map->points[point_id].g != 0 && map->points[point_id].r != 0)))
-    {
-      second_task_point[0] += map->points[point_id].x;
-      second_task_point[1] += map->points[point_id].y;
-      second_task_point[2] += map->points[point_id].z;
-      num_adds++;
-      //ROS_INFO("XYZ Point:\t%f\t%f",  map->points[point_id].x, map->points[point_id].y);
-    }
-  }
-  task_point[0] = second_task_point[0] / num_adds;
-  task_point[1] = second_task_point[1] / num_adds;
-  task_point[2] = second_task_point[2] / num_adds;
-  
-  float handle_seperation = sqrt(pow(fabs(handle_point[0] - task_point[0]), 2.0) + pow(fabs(handle_point[1] - task_point[1]), 2.0));
-  heading = asin((handle_point[1] - task_point[1])/handle_seperation);
-  if(handle_point[0] - task_point[0] <= 0)
-  {
-    if(handle_point[1] - task_point[1] <= 0)
+    if(trailer_point[1] - handle_point[1] <= 0)
     {
       heading = -M_PI-heading;
     }
@@ -1029,21 +1023,27 @@ Path_Generation::findTaskThreeStairPoint(pcl::PointCloud<pcl::PointXYZRGB>* map,
   
   int num_angle = round(heading / M_PI_4);
   heading = num_angle * M_PI_4;
-  ROS_INFO("Corrected Heading: %f", heading);
+  ROS_INFO("Heading: %f", heading);
   
-  pcl::PointXYZRGB temp_point;
-  temp_point.x = task_point[0];
-  temp_point.y = task_point[1];
-  temp_point.z = 0.0;
-  temp_point.r = 255;
-  temp_point.g = 255;
-  temp_point.b = 255;
-  map->points.push_back(temp_point);
+  std::vector<float> end_point(3, 0);
+  end_point[0] = -1.0;
+  end_point[1] = 0.0;
+  end_point[2] = 0.0;
+  tf2::Matrix3x3 rotation;
+  rotation.setRPY(0.0, 0.0, heading);
   
+  task_point[0] = end_point[0]*rotation[0][0] + end_point[1]*rotation[0][1] + end_point[2]*rotation[0][2];
+  task_point[1] = end_point[0]*rotation[1][0] + end_point[1]*rotation[1][1] + end_point[2]*rotation[1][2];
+  task_point[2] = end_point[0]*rotation[2][0] + end_point[1]*rotation[2][1] + end_point[2]*rotation[2][2];
+  task_point[0] += yellow_stair_point[0];
+  task_point[1] += yellow_stair_point[1];
+  task_point[2] = 0;
   task_point[3] = heading;
   
+  stair_final_distance = sqrt(pow(fabs(center_point.x - task_point[0]), 2.0) + pow(fabs(center_point.y - task_point[1]), 2.0));
+  
   *output = task_point;
-  if(found_stairs == true && !isnan(task_point[0]) && !isnan(task_point[1]))
+  if(found_stairs == true && !isnan(task_point[0]) && !isnan(task_point[1]) && stair_final_distance < 3.0)
   {
     return true;
   }
@@ -1118,7 +1118,7 @@ Path_Generation::createPathPointList(tf2_ros::Buffer* tfBuffer, std::vector<floa
     
     // Check along path for an obstacle.
     bool path_has_obstacles = false;
-    for(float current_check_increment = 0.0; current_check_increment < cross_distance && path_has_obstacles == false; current_check_increment += path_increment)
+    for(float current_check_increment = 0.0; current_check_increment < cross_distance - 0.25 && path_has_obstacles == false; current_check_increment += path_increment)
     {
       int path_point_has_obstacles = obstacle_count;
       float current_x_pathpoint = x_end_point * (current_check_increment/cross_distance) + current_x_checkpoint;

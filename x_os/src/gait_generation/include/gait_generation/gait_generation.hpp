@@ -45,9 +45,9 @@ class Gait_Generation
     const float DEFAULT_STEP_DISTANCE = 0.46;
     const float DEFAULT_SIDE_STEP_DISTANCE = 0.36;
     const float DEFAULT_STEP_SEPERATION = 0.26;
-    const float DEFAULT_STEP_HEIGHT = -0.01;
+    const float DEFAULT_STEP_HEIGHT = -0.008;
     
-    const float DEFAULT_SWING_TIME = 0.80;
+    const float DEFAULT_SWING_TIME = 0.60;
     const float DEFAULT_TRANSFER_TIME = 0.38;
     const float FINAL_TRANSFER_TIME = 0.20;
     

@@ -307,6 +307,14 @@ Trajectory_Generation::createStepOffset(bool step_side, float step_distance, std
     tf2Scalar roll = 0;
     tf2Scalar pitch = -step_distance/3;
     tf2Scalar yaw = -0.06;
+    if(yaw < -M_PI)
+    {
+      yaw += 2*M_PI;
+    }
+    else if(yaw > M_PI)
+    {
+      yaw -= 2*M_PI;
+    }
     tf2::Quaternion new_orientation;
     new_orientation.setRPY(roll, pitch, yaw);
     new_step_msg.orientation.x = new_orientation.x();
@@ -338,6 +346,14 @@ Trajectory_Generation::createStepOffset(bool step_side, float step_distance, std
     tf2Scalar roll = 0;
     tf2Scalar pitch = -step_distance/3;
     tf2Scalar yaw = 0.06;
+    if(yaw < -M_PI)
+    {
+      yaw += 2*M_PI;
+    }
+    else if(yaw > M_PI)
+    {
+      yaw -= 2*M_PI;
+    }
     tf2::Quaternion new_orientation;
     new_orientation.setRPY(roll, pitch, yaw);
     new_step_msg.orientation.x = new_orientation.x();
@@ -534,6 +550,14 @@ Trajectory_Generation::createStepLinear(bool step_side, float step_distance, std
     tf2Scalar roll = 0;
     tf2Scalar pitch = -step_distance/3;
     tf2Scalar yaw = -0.06 + heading;
+    if(yaw < -M_PI)
+    {
+      yaw += 2*M_PI;
+    }
+    else if(yaw > M_PI)
+    {
+      yaw -= 2*M_PI;
+    }
     tf2::Quaternion new_orientation;
     new_orientation.setRPY(roll, pitch, yaw);
     new_step_msg.orientation.x += new_orientation.x();
@@ -560,6 +584,14 @@ Trajectory_Generation::createStepLinear(bool step_side, float step_distance, std
     tf2Scalar roll = 0;
     tf2Scalar pitch = -step_distance/3;
     tf2Scalar yaw = 0.06 + heading;
+    if(yaw < -M_PI)
+    {
+      yaw += 2*M_PI;
+    }
+    else if(yaw > M_PI)
+    {
+      yaw -= 2*M_PI;
+    }
     tf2::Quaternion new_orientation;
     new_orientation.setRPY(roll, pitch, yaw);
     new_step_msg.orientation.x += new_orientation.x();
@@ -581,7 +613,7 @@ Trajectory_Generation::createStepLinearStairs(bool step_side, float step_distanc
   // Creates datastep msg
   ihmc_msgs::FootstepDataRosMessage new_step_msg;
   new_step_msg.trajectory_type = ihmc_msgs::FootstepDataRosMessage::OBSTACLE_CLEARANCE;
-  new_step_msg.swing_height = 0.2;
+  new_step_msg.swing_height = 0.25;
   new_step_msg.has_timings = false;
   new_step_msg.has_absolute_time = true;
   new_step_msg.unique_id = 1;

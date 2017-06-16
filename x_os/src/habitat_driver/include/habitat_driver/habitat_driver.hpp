@@ -44,11 +44,15 @@ class Habitat_Driver
     void
     walkToDoor(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
+    alignToDoor(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
     openDoor();
     std::vector<float>
     openDoorTrajectory(bool robot_side_arm, int step_num);
     void
     enterHab();
+    std::vector<float>
+    getArmAtStair(bool robot_side);
 };
 
 #endif

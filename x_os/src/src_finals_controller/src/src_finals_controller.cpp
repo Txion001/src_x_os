@@ -142,7 +142,7 @@ Src_Finals_Controller::executeTaskTwo(tf2_ros::Buffer* tfBuffer)
   solar_components_driver.alignToPanel(&map_scan, tfBuffer, &map);
   
   solar_components_driver.grabPanel(tfBuffer, &map);
-  solar_components_driver.carryPanel();
+  solar_components_driver.carryPanel(&map);
   solar_components_driver.returnToPath(temp_map_end_point);
   
   map_scan.wideScan(&map);
@@ -210,6 +210,11 @@ Src_Finals_Controller::executeTaskThree(tf2_ros::Buffer* tfBuffer)
   
   habitat_driver.climbStairs(tfBuffer, &map);
   habitat_driver.walkToDoor(tfBuffer, &map);
+  map_scan.simpleTaskThreeHandleScan(&map);
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
+  
+  habitat_driver.alignToDoor(tfBuffer, &map);
   habitat_driver.openDoor();
   habitat_driver.enterHab();
 }
@@ -278,7 +283,7 @@ Src_Finals_Controller::executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher
   scan_output.publish(output);
   exploreMap(tfBuffer, 3.5, false);
   
-  //Start Task Two
+  // Start Task Two
   current_status.status = 20;
   statusPublisher->publish(current_status);
   
@@ -301,7 +306,8 @@ Src_Finals_Controller::executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher
     pcl::toROSMsg(map, output);
     scan_output.publish(output);
   }
-  
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
   temp_map_end_point = path_generation.findMapEndPoint(&map);
   path_generation.traversePointList(path_generation.createPathPointList(tfBuffer, button_point, &map), false);
   pcl::toROSMsg(map, output);
@@ -312,7 +318,7 @@ Src_Finals_Controller::executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher
   solar_components_driver.alignToPanel(&map_scan, tfBuffer, &map);
   
   solar_components_driver.grabPanel(tfBuffer, &map);
-  solar_components_driver.carryPanel();
+  solar_components_driver.carryPanel(&map);
   current_status.status = 21;
   statusPublisher->publish(current_status);
   solar_components_driver.returnToPath(temp_map_end_point);
@@ -352,7 +358,7 @@ Src_Finals_Controller::executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher
   statusPublisher->publish(current_status);
   pcl::toROSMsg(map, output);
   scan_output.publish(output);
-  solar_components_driver.grabCable();
+  solar_components_driver.grabCable(&map_scan, tfBuffer, &map);
   current_status.status = 24;
   statusPublisher->publish(current_status);
   solar_components_driver.plugCable(&map_scan, tfBuffer, &map);
@@ -382,7 +388,7 @@ Src_Finals_Controller::executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher
   std::vector<float> stair_point;
   while(path_generation.findTaskThreeStairPoint(&map, &stair_point) == false)
   {
-    exploreMap(tfBuffer, 2.0, true);
+    exploreMap(tfBuffer, 2.0, false);
     
     map_scan.wideScan(&map);
     pcl::toROSMsg(map, output);
@@ -398,17 +404,30 @@ Src_Finals_Controller::executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher
   current_status.status = 31;
   statusPublisher->publish(current_status);
   
+  map_scan.wideLowTaskThreeStairScan(&map);
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
+  
   habitat_driver.climbStairs(tfBuffer, &map);
   
   current_status.status = 32;
   statusPublisher->publish(current_status);
   
   habitat_driver.walkToDoor(tfBuffer, &map);
+  map_scan.simpleTaskThreeHandleScan(&map);
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
+  
+  habitat_driver.alignToDoor(tfBuffer, &map);
   habitat_driver.openDoor();
   habitat_driver.enterHab();
   
   current_status.status = 33;
   statusPublisher->publish(current_status);
+  
+  map_scan.generateHabitat(&map);
+  pcl::toROSMsg(map, output);
+  scan_output.publish(output);
 }
 
 void

@@ -41,6 +41,17 @@ Solar_Components_Driver::alignToPanel(Map_Scan* map_scan, tf2_ros::Buffer* tfBuf
   tf2Scalar roll = (left_roll+right_roll)/2;
   tf2Scalar pitch = (left_pitch+right_pitch)/2;
   tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
   geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
   center_point.x += right_foot_ankle.transform.translation.x;
   center_point.y += right_foot_ankle.transform.translation.y;
@@ -139,6 +150,7 @@ Solar_Components_Driver::alignToPanel(Map_Scan* map_scan, tf2_ros::Buffer* tfBuf
   {
     relative_panel_orient -= 2*M_PI;
   }
+  ROS_INFO("panel_orient: %f", panel_orient);
   ROS_INFO("Relative panel orient: %f", relative_panel_orient);
   ROS_INFO("XYZ location:\t%f\t%f\t%f\tHeading: %f", handle_point[0], handle_point[1], handle_point[2], heading - yaw);
   
@@ -162,6 +174,9 @@ Solar_Components_Driver::alignToPanel(Map_Scan* map_scan, tf2_ros::Buffer* tfBuf
     tf2Scalar pelvis_yaw;
     tf2::Matrix3x3 pelvis_rotation(last_heading);
     pelvis_rotation.getRPY(pelvis_roll, pelvis_pitch, pelvis_yaw);
+    num_angle = round(pelvis_yaw / M_PI_4);
+    pelvis_yaw = num_angle * M_PI_4;
+    ROS_INFO("Corrected Heading: %f", pelvis_yaw);
     pelvis_rotation.setRPY(0.0, 0.0, pelvis_yaw);
     
     chest_msg.execution_mode = ihmc_msgs::ChestTrajectoryRosMessage::OVERRIDE;
@@ -234,6 +249,7 @@ Solar_Components_Driver::alignToPanel(Map_Scan* map_scan, tf2_ros::Buffer* tfBuf
     x_publisher.publish(step_list_msg);
   }
   map_scan->lowTaskTwoHandleScan(map);
+  
   // Locate center point between task one handles
   for(int point_id = 0; point_id < map->points.size(); point_id++)
   {
@@ -305,7 +321,7 @@ Solar_Components_Driver::alignToPanel(Map_Scan* map_scan, tf2_ros::Buffer* tfBuf
   
   std::vector<float> left_arm_swing = grabPanelTrajectory(LEFT, 0);
   std::vector<float> ang_vel(7, 0);
-  if(relative_panel_orient < M_PI_2 && relative_panel_orient > -M_PI_2)
+  if(relative_panel_orient <= M_PI_2 && relative_panel_orient >= -M_PI_2)
   {
     left_arm_swing[4] += M_PI;
   }
@@ -366,6 +382,17 @@ Solar_Components_Driver::alignThePanel(tf2_ros::Buffer* tfBuffer, pcl::PointClou
   tf2Scalar roll = (left_roll+right_roll)/2;
   tf2Scalar pitch = (left_pitch+right_pitch)/2;
   tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
   geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
   center_point.x += right_foot_ankle.transform.translation.x;
   center_point.y += right_foot_ankle.transform.translation.y;
@@ -464,6 +491,7 @@ Solar_Components_Driver::alignThePanel(tf2_ros::Buffer* tfBuffer, pcl::PointClou
   {
     relative_panel_orient -= 2*M_PI;
   }
+  ROS_INFO("panel_orient: %f", panel_orient);
   ROS_INFO("Relative panel orient: %f", relative_panel_orient);
   ROS_INFO("XYZ location:\t%f\t%f\t%f\tHeading: %f", handle_point[0], handle_point[1], handle_point[2], heading - yaw);
   
@@ -484,27 +512,25 @@ Solar_Components_Driver::alignThePanel(tf2_ros::Buffer* tfBuffer, pcl::PointClou
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(1.0, right_arm_swing, ang_vel, right_arm_msg);
   left_arm_swing = alignPanelTrajectory(LEFT, 1);
   right_arm_swing = alignPanelTrajectory(RIGHT, 1);
+  right_arm_swing[4] += orient_offset/2;
   left_arm_msg = trajectory_generation.appendTrajectoryPoint(2.0, left_arm_swing, ang_vel, left_arm_msg);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(2.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = alignPanelTrajectory(RIGHT, 2);
   right_arm_swing[2] += orient_offset/2;
   right_arm_swing[4] += orient_offset/2;
-  if(orient_offset > 0)
-  {
-    right_arm_swing[3] += orient_offset/8;
-  }
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(3.0, right_arm_swing, ang_vel, right_arm_msg);
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(3.2, right_arm_swing, ang_vel, right_arm_msg);
-  right_arm_swing = alignPanelTrajectory(RIGHT, 3);
+  right_arm_swing[5] -= orient_offset/6;
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(4.0, right_arm_swing, ang_vel, right_arm_msg);
-  right_arm_swing = alignPanelTrajectory(RIGHT, 4);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(5.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_swing = alignPanelTrajectory(RIGHT, 3);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(6.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_swing = alignPanelTrajectory(RIGHT, 4);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(8.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = alignPanelTrajectory(RIGHT, 5);
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(7.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(9.0, right_arm_swing, ang_vel, right_arm_msg);
   left_arm_swing = alignPanelTrajectory(LEFT, 0);
   right_arm_swing = alignPanelTrajectory(RIGHT, 0);
-  left_arm_msg = trajectory_generation.appendTrajectoryPoint(8.0, left_arm_swing, ang_vel, left_arm_msg);
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(8.0, right_arm_swing, ang_vel, right_arm_msg);
+  left_arm_msg = trajectory_generation.appendTrajectoryPoint(10.0, left_arm_swing, ang_vel, left_arm_msg);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(10.0, right_arm_swing, ang_vel, right_arm_msg);
   
   geometry_msgs::TransformStamped pelvis = tfBuffer->lookupTransform(WORLD, PELVIS, ros::Time(0), ros::Duration(0.2));
   
@@ -514,13 +540,16 @@ Solar_Components_Driver::alignThePanel(tf2_ros::Buffer* tfBuffer, pcl::PointClou
   tf2Scalar pelvis_yaw;
   tf2::Matrix3x3 pelvis_rotation(last_heading);
   pelvis_rotation.getRPY(pelvis_roll, pelvis_pitch, pelvis_yaw);
+  num_angle = round(pelvis_yaw / M_PI_4);
+  pelvis_yaw = num_angle * M_PI_4;
+  ROS_INFO("Corrected Heading: %f", pelvis_yaw);
   pelvis_rotation.setRPY(0.0, 0.0, pelvis_yaw);
   
   chest_msg.execution_mode = ihmc_msgs::ChestTrajectoryRosMessage::OVERRIDE;
   std::vector<float> new_chest_orient (3, 0);
   std::vector<float> new_chest_ang_vel (3, 0);
   new_chest_orient[1] = 0.4;
-  new_chest_orient[2] = pelvis_yaw;
+  new_chest_orient[2] = pelvis_yaw + 0.1;
   float chest_time = 1.0;
   chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(1.0, new_chest_orient, new_chest_ang_vel));
   
@@ -556,15 +585,15 @@ Solar_Components_Driver::alignThePanel(tf2_ros::Buffer* tfBuffer, pcl::PointClou
   finger_pos[4] = 0.0;
   right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
   trajectoryRightHandPublisher.publish(right_fingers);
-  ros::Duration(3.0).sleep();
+  ros::Duration(4.0).sleep();
   finger_pos[0] = 1.5;
   finger_pos[1] = 1.0;
   finger_pos[2] = 1.0;
-  finger_pos[3] = 0.0;
-  finger_pos[4] = 0.0;
+  finger_pos[3] = 1.0;
+  finger_pos[4] = 1.0;
   right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
   trajectoryRightHandPublisher.publish(right_fingers);
-  ros::Duration(2.5).sleep();
+  ros::Duration(3.5).sleep();
   finger_pos[0] = 1.5;
   finger_pos[1] = 0.0;
   finger_pos[2] = 0.0;
@@ -628,7 +657,7 @@ Solar_Components_Driver::alignPanelTrajectory(bool robot_side_arm, int step_num)
       trajectory_out[1] = 1.45;
       trajectory_out[2] = 0.5;
       trajectory_out[3] = 0.8;
-      trajectory_out[4] = 1.2;
+      trajectory_out[4] = 1.9;
       trajectory_out[5] = 0.0;
       trajectory_out[6] = 0.0;
     }
@@ -647,12 +676,12 @@ Solar_Components_Driver::alignPanelTrajectory(bool robot_side_arm, int step_num)
     }
     else
     {
-      trajectory_out[0] = -1.1;
+      trajectory_out[0] = -1.0;
       trajectory_out[1] = 1.51;
       trajectory_out[2] = 1.5;
       trajectory_out[3] = 0.7;
       trajectory_out[4] = 1.9;
-      trajectory_out[5] = 0.0;
+      trajectory_out[5] = 0.4;
       trajectory_out[6] = 0.0;
     }
   }
@@ -693,11 +722,11 @@ Solar_Components_Driver::alignPanelTrajectory(bool robot_side_arm, int step_num)
     }
     else
     {
-      trajectory_out[0] = -1.2;
-      trajectory_out[1] = 1.51;
-      trajectory_out[2] = 1.5;
+      trajectory_out[0] = -1.1;
+      trajectory_out[1] = 1.3;
+      trajectory_out[2] = 1.8;
       trajectory_out[3] = 0.8;
-      trajectory_out[4] = 0.6;
+      trajectory_out[4] = 0.4;
       trajectory_out[5] = 0.6;
       trajectory_out[6] = 0.0;
     }
@@ -749,6 +778,17 @@ Solar_Components_Driver::grabPanel(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pc
   tf2Scalar roll = (left_roll+right_roll)/2;
   tf2Scalar pitch = (left_pitch+right_pitch)/2;
   tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
   
   geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
   center_point.x += right_foot_ankle.transform.translation.x;
@@ -823,6 +863,10 @@ Solar_Components_Driver::grabPanel(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pc
       heading = M_PI-heading;
     }
   }
+  int num_angle = round(heading / M_PI_4);
+  heading = num_angle * M_PI_4;
+  ROS_INFO("Corrected Heading: %f", heading);
+  
   float handle_button_distance = sqrt(pow(handle_point[0] - button_point[0], 2.0) + pow(handle_point[1] - button_point[1], 2.0));
   float panel_orient = asin((button_point[1] - handle_point[1])/handle_button_distance);
   ROS_INFO("heading: %f", heading);
@@ -860,7 +904,7 @@ Solar_Components_Driver::grabPanel(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pc
   }
   ROS_INFO("Relative panel orient: %f", relative_panel_orient);
   tf2::Matrix3x3 rotation;
-  if(relative_panel_orient < M_PI_2 && relative_panel_orient > -M_PI_2)
+  if(relative_panel_orient <= M_PI_2 && relative_panel_orient >= -M_PI_2)
   {
     rotation.setRPY(0.0, 0.0, panel_orient);
   }
@@ -977,20 +1021,123 @@ Solar_Components_Driver::grabPanel(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pc
 }
 
 void
-Solar_Components_Driver::carryPanel()
+Solar_Components_Driver::carryPanel(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   X_Publisher x_publisher;
   tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
+  geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  geometry_msgs::TransformStamped right_foot_ankle = tfBuffer.lookupTransform(WORLD, RIGHT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  tf2Scalar left_roll;
+  tf2Scalar left_pitch;
+  tf2Scalar left_yaw;
+  tf2Scalar right_roll;
+  tf2Scalar right_pitch;
+  tf2Scalar right_yaw;
+  tf2::Quaternion left_orientation(left_foot_ankle.transform.rotation.x, left_foot_ankle.transform.rotation.y, left_foot_ankle.transform.rotation.z, left_foot_ankle.transform.rotation.w);
+  tf2::Quaternion right_orientation(right_foot_ankle.transform.rotation.x, right_foot_ankle.transform.rotation.y, right_foot_ankle.transform.rotation.z, right_foot_ankle.transform.rotation.w);
+  tf2::Matrix3x3 left_rotation(left_orientation);
+  left_rotation.getRPY(left_roll, left_pitch, left_yaw);
+  tf2::Matrix3x3 right_rotation(right_orientation);
+  right_rotation.getRPY(right_roll, right_pitch, right_yaw);
+  tf2Scalar roll = (left_roll+right_roll)/2;
+  tf2Scalar pitch = (left_pitch+right_pitch)/2;
+  tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
+  geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
+  center_point.x += right_foot_ankle.transform.translation.x;
+  center_point.y += right_foot_ankle.transform.translation.y;
+  center_point.z += right_foot_ankle.transform.translation.z;
+  
+  center_point.x = center_point.x/2;
+  center_point.y = center_point.y/2;
+  center_point.z = center_point.z/2;
   geometry_msgs::TransformStamped pelvis = tfBuffer.lookupTransform(WORLD, PELVIS, ros::Time(0), ros::Duration(0.2));
   
-  tf2::Quaternion heading(pelvis.transform.rotation.x, pelvis.transform.rotation.y, pelvis.transform.rotation.z, pelvis.transform.rotation.w);
-  tf2Scalar roll;
-  tf2Scalar pitch;
-  tf2Scalar yaw;
-  tf2::Matrix3x3 rotation(heading);
-  rotation.getRPY(roll, pitch, yaw);
-  rotation.setRPY(0.0, 0.0, yaw);
+  tf2::Quaternion pelvis_heading(pelvis.transform.rotation.x, pelvis.transform.rotation.y, pelvis.transform.rotation.z, pelvis.transform.rotation.w);
+  tf2Scalar pelvis_roll;
+  tf2Scalar pelvis_pitch;
+  tf2Scalar pelvis_yaw;
+  tf2::Matrix3x3 pelvis_rotation(pelvis_heading);
+  pelvis_rotation.getRPY(pelvis_roll, pelvis_pitch, pelvis_yaw);
+  pelvis_rotation.setRPY(0.0, 0.0, pelvis_yaw);
+  
+  std::vector<float> button_point(3, 0);
+  std::vector<float> handle_point(3, 0);
+  
+  // Locate center point between task one handles
+  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  {
+    if(map->points[point_id].b == 0 && map->points[point_id].g == 0 && map->points[point_id].r == 200)
+    {
+      button_point[0] = map->points[point_id].x;
+      button_point[1] = map->points[point_id].y;
+      button_point[2] = map->points[point_id].z;
+    }
+    else if(map->points[point_id].g == 0 && map->points[point_id].r == 0 && map->points[point_id].b == 200)
+    {
+      handle_point[0] = map->points[point_id].x;
+      handle_point[1] = map->points[point_id].y;
+      handle_point[2] = map->points[point_id].z;
+    }
+  }
+  
+  float handle_final_distance = sqrt(pow(fabs(handle_point[0] - center_point.x), 2.0) + pow(fabs(handle_point[1] - center_point.y), 2.0));
+  float heading = asin((handle_point[1] - center_point.y)/handle_final_distance);
+  if(handle_point[0] - center_point.x <= 0)
+  {
+    if(handle_point[1] - center_point.y <= 0)
+    {
+      heading = -M_PI-heading;
+    }
+    else
+    {
+      heading = M_PI-heading;
+    }
+  }
+  int num_angle = round(heading / M_PI_4);
+  heading = num_angle * M_PI_4;
+  ROS_INFO("Corrected Heading: %f", heading);
+  
+  float handle_button_distance = sqrt(pow(handle_point[0] - button_point[0], 2.0) + pow(handle_point[1] - button_point[1], 2.0));
+  float panel_orient = asin((button_point[1] - handle_point[1])/handle_button_distance);
+  ROS_INFO("heading: %f", heading);
+  if(button_point[0] - handle_point[0] <= 0)
+  {
+    if(button_point[1] - handle_point[1] <= 0)
+    {
+      panel_orient = -M_PI-panel_orient;
+    }
+    else
+    {
+      panel_orient = M_PI-panel_orient;
+    }
+  }
+  ROS_INFO("panel_orient: %f", panel_orient);
+  ROS_INFO("button xy: %f\t%f", button_point[0], button_point[1]);
+  ROS_INFO("handle xy: %f\t%f", handle_point[0], handle_point[1]);
+  ROS_INFO("panel_distance: %f", handle_button_distance);
+
+  float relative_panel_orient = panel_orient - heading;
+  if(relative_panel_orient < -M_PI)
+  {
+    relative_panel_orient += 2*M_PI;
+  }
+  else if(relative_panel_orient > M_PI)
+  {
+    relative_panel_orient -= 2*M_PI;
+  }
+  ROS_INFO("Relative panel orient: %f", relative_panel_orient);
   
   // Set Valkyrie into starting configuration
   ihmc_msgs::WholeBodyTrajectoryRosMessage trajectory_list_msg;
@@ -1022,19 +1169,32 @@ Solar_Components_Driver::carryPanel()
   left_foot_msg.robot_side = LEFT;
   right_foot_msg.robot_side = RIGHT;
   
-  std::vector<float> left_arm_swing = pickUpPanelTrajectory(LEFT, 0);
+  std::vector<float> right_arm_swing;
+  std::vector<float> left_arm_swing;
   std::vector<float> ang_vel(7, 0);
-  //left_arm_msg = trajectory_generation.appendTrajectoryPoint(1.0, left_arm_swing, ang_vel, left_arm_msg);
-  left_arm_swing = pickUpPanelTrajectory(LEFT, 1);
-  left_arm_msg = trajectory_generation.appendTrajectoryPoint(3.0, left_arm_swing, ang_vel, left_arm_msg);
   
-  std::vector<float> right_arm_swing = pickUpPanelTrajectory(RIGHT, 0);
+  if(relative_panel_orient < M_PI_2 && relative_panel_orient > -M_PI_2)
+  {
+    left_arm_swing = pickUpPanelTrajectory(LEFT, 1);
+    left_arm_msg = trajectory_generation.appendTrajectoryPoint(3.0, left_arm_swing, ang_vel, left_arm_msg);
+  }
+  else
+  {
+    left_arm_swing = pickUpPanelTrajectory(LEFT, 1);
+    left_arm_msg = trajectory_generation.appendTrajectoryPoint(3.0, left_arm_swing, ang_vel, left_arm_msg);
+    left_arm_swing = pickUpPanelTrajectory(LEFT, 0);
+    left_arm_msg = trajectory_generation.appendTrajectoryPoint(5.0, left_arm_swing, ang_vel, left_arm_msg);
+    left_arm_swing = pickUpPanelTrajectory(LEFT, 1);
+    left_arm_msg = trajectory_generation.appendTrajectoryPoint(7.0, left_arm_swing, ang_vel, left_arm_msg);
+  }
+  
+  right_arm_swing = pickUpPanelTrajectory(RIGHT, 0);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(1.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(5.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = pickUpPanelTrajectory(RIGHT, 1);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(6.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = pickUpPanelTrajectory(RIGHT, 2);
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(7.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(10.0, right_arm_swing, ang_vel, right_arm_msg);
   
   pelvis_msg.execution_mode = ihmc_msgs::PelvisTrajectoryRosMessage::OVERRIDE;
   pelvis_msg.taskspace_trajectory_points.push_back(trajectory_generation.createPelvisHeightTrajectoryPoint(7.0, 1.06));
@@ -1043,8 +1203,8 @@ Solar_Components_Driver::carryPanel()
   std::vector<float> new_chest_orient (3, 0);
   std::vector<float> new_chest_ang_vel (3, 0);
   new_chest_orient[1] = 0.1;
-  new_chest_orient[2] = yaw;
-  chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(1.0, new_chest_orient, new_chest_ang_vel));
+  new_chest_orient[2] = pelvis_yaw;
+  chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(3.0, new_chest_orient, new_chest_ang_vel));
   
   //Publish All Trajectories
   trajectory_list_msg.left_arm_trajectory_message = left_arm_msg;
@@ -1073,7 +1233,7 @@ Solar_Components_Driver::carryPanel()
   finger_pos[4] = 0.0;
   right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
   trajectoryRightHandPublisher.publish(right_fingers);
-  ros::Duration(7.0).sleep();
+  ros::Duration(10.0).sleep();
   finger_pos[0] = 0.0;
   finger_pos[1] = 0.0;
   finger_pos[2] = 0.6;
@@ -1122,13 +1282,13 @@ Solar_Components_Driver::pickUpPanelTrajectory(bool robot_side_arm, int step_num
   {
     if(robot_side_arm == LEFT)
     {
-      trajectory_out[0] = -0.3;
-      trajectory_out[1] = -1.51;
-      trajectory_out[2] = 0.0;
-      trajectory_out[3] = -2.3;
-      trajectory_out[4] = 0.0;
-      trajectory_out[5] = 0.0;
-      trajectory_out[6] = 0.28;
+      trajectory_out[0] = -1.1;
+      trajectory_out[1] = -1.3;
+      trajectory_out[2] = 2.16;
+      trajectory_out[3] = -1.3;
+      trajectory_out[4] = 1.0;
+      trajectory_out[5] = -0.6;
+      trajectory_out[6] = 0.2;
     }
     else
     {
@@ -1168,13 +1328,13 @@ Solar_Components_Driver::pickUpPanelTrajectory(bool robot_side_arm, int step_num
   {
     if(robot_side_arm == LEFT)
     {
-      trajectory_out[0] = -2.1;
+      trajectory_out[0] = -1.0;
       trajectory_out[1] = -1.2;
-      trajectory_out[2] = 2.0;
-      trajectory_out[3] = -2.0;
-      trajectory_out[4] = 0.0;
+      trajectory_out[2] = 2.16;
+      trajectory_out[3] = -1.3;
+      trajectory_out[4] = 1.0;
       trajectory_out[5] = -0.6;
-      trajectory_out[6] = -0.0;
+      trajectory_out[6] = 0.2;
     }
     else
     {
@@ -1309,6 +1469,29 @@ Solar_Components_Driver::dropPanelTrajectory(bool robot_side_arm, int step_num)
       trajectory_out[6] = 0.0;
     }
   }
+  if(step_num == 5)
+  {
+    if(robot_side_arm == LEFT)
+    {
+      trajectory_out[0] = -1.8;
+      trajectory_out[1] = -1.51;
+      trajectory_out[2] = 1.57;
+      trajectory_out[3] = -0.5;
+      trajectory_out[4] = 1.57;
+      trajectory_out[5] = -0.6;
+      trajectory_out[6] = -0.3;
+    }
+    else
+    {
+      trajectory_out[0] = -0.0;
+      trajectory_out[1] = 1.47;
+      trajectory_out[2] = -0.8;
+      trajectory_out[3] = 1.8;
+      trajectory_out[4] = 1.57;
+      trajectory_out[5] = 0.60;
+      trajectory_out[6] = 0.28;
+    }
+  }
   return trajectory_out;
 }
 
@@ -1401,9 +1584,9 @@ Solar_Components_Driver::grabCableTrajectory(bool robot_side_arm, int step_num)
     {
       trajectory_out[0] = -0.7;
       trajectory_out[1] = 0.8;
-      trajectory_out[2] = 1.7;
+      trajectory_out[2] = 1.67;
       trajectory_out[3] = 0.3;
-      trajectory_out[4] = 1.0;
+      trajectory_out[4] = 1.3;
       trajectory_out[5] = -0.6;
       trajectory_out[6] = 0.2;
     }
@@ -1437,7 +1620,7 @@ Solar_Components_Driver::grabCableTrajectory(bool robot_side_arm, int step_num)
     {
       trajectory_out[0] = -0.0;
       trajectory_out[1] = -1.51;
-      trajectory_out[2] = 0.0;
+      trajectory_out[2] = -0.4;
       trajectory_out[3] = -1.8;
       trajectory_out[4] = 1.57;
       trajectory_out[5] = 0.0;
@@ -1445,10 +1628,10 @@ Solar_Components_Driver::grabCableTrajectory(bool robot_side_arm, int step_num)
     }
     else
     {
-      trajectory_out[0] = -2.5;
-      trajectory_out[1] = 0.6;
+      trajectory_out[0] = -1.7;
+      trajectory_out[1] = 1.3;
       trajectory_out[2] = 1.57;
-      trajectory_out[3] = 1.3;
+      trajectory_out[3] = 0.6;
       trajectory_out[4] = 0.0;
       trajectory_out[5] = 0.0;
       trajectory_out[6] = 0.0;
@@ -1468,23 +1651,23 @@ Solar_Components_Driver::grabCableTrajectory(bool robot_side_arm, int step_num)
     }
     else
     {
-      trajectory_out[0] = 0.9;
+      trajectory_out[0] = 1.0;
       trajectory_out[1] = 1.3;
       trajectory_out[2] = -1.5;
-      trajectory_out[3] = 1.0;
-      trajectory_out[4] = 2.0;
-      trajectory_out[5] = 0.3;
-      trajectory_out[6] = 0.35;
+      trajectory_out[3] = 1.6;
+      trajectory_out[4] = 2.8;
+      trajectory_out[5] = 0.6;
+      trajectory_out[6] = -0.0;
     }
   }
   if(step_num == 7)
   {
     if(robot_side_arm == LEFT)
     {
-      trajectory_out[0] = -0.0;
-      trajectory_out[1] = -1.51;
-      trajectory_out[2] = 0.0;
-      trajectory_out[3] = -1.8;
+      trajectory_out[0] = -2.0;
+      trajectory_out[1] = -0.3;
+      trajectory_out[2] = 1.57;
+      trajectory_out[3] = -0.3;
       trajectory_out[4] = 1.57;
       trajectory_out[5] = 0.0;
       trajectory_out[6] = 0.0;
@@ -1494,9 +1677,9 @@ Solar_Components_Driver::grabCableTrajectory(bool robot_side_arm, int step_num)
       trajectory_out[0] = 0.9;
       trajectory_out[1] = 1.3;
       trajectory_out[2] = -1.5;
-      trajectory_out[3] = 0.9;
+      trajectory_out[3] = 1.6;
       trajectory_out[4] = 1.6;
-      trajectory_out[5] = 0.3;
+      trajectory_out[5] = 0.6;
       trajectory_out[6] = -0.0;
     }
   }
@@ -1516,8 +1699,8 @@ Solar_Components_Driver::grabCableTrajectory(bool robot_side_arm, int step_num)
     {
       trajectory_out[0] = -1.57;
       trajectory_out[1] = -0.4;
-      trajectory_out[2] = 1.3;
-      trajectory_out[3] = 1.3;
+      trajectory_out[2] = 0.6;
+      trajectory_out[3] = 2.0;
       trajectory_out[4] = -1.2;
       trajectory_out[5] = 0.0;
       trajectory_out[6] = -0.2;
@@ -1840,7 +2023,7 @@ Solar_Components_Driver::dropPanel()
   right_arm_msg.unique_id = 1;
   left_hand_msg.unique_id = 0;
   right_hand_msg.unique_id = 0;
-  chest_msg.unique_id = 0;
+  chest_msg.unique_id = 1;
   pelvis_msg.unique_id = 0;
   left_foot_msg.unique_id = 0;
   right_foot_msg.unique_id = 0;
@@ -1863,13 +2046,25 @@ Solar_Components_Driver::dropPanel()
   left_arm_msg = trajectory_generation.appendTrajectoryPoint(6.0, left_arm_swing, ang_vel, left_arm_msg);
   left_arm_swing = dropPanelTrajectory(LEFT, 1);
   left_arm_msg = trajectory_generation.appendTrajectoryPoint(7.0, left_arm_swing, ang_vel, left_arm_msg);
-  left_arm_swing = dropPanelTrajectory(LEFT, 0);
+  left_arm_swing = dropPanelTrajectory(LEFT, 5);
   left_arm_msg = trajectory_generation.appendTrajectoryPoint(8.0, left_arm_swing, ang_vel, left_arm_msg);
   left_arm_swing = dropPanelTrajectory(LEFT, 2);
   left_arm_msg = trajectory_generation.appendTrajectoryPoint(9.0, left_arm_swing, ang_vel, left_arm_msg);
   
   std::vector<float> right_arm_swing = dropPanelTrajectory(RIGHT, 0);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(1.0, right_arm_swing, ang_vel, right_arm_msg);
+  
+  int num_angle = round(yaw / M_PI_4);
+  float chest_heading = num_angle * M_PI_4;
+  ROS_INFO("Corrected Heading: %f", chest_heading);
+  
+  chest_msg.execution_mode = ihmc_msgs::ChestTrajectoryRosMessage::OVERRIDE;
+  std::vector<float> new_chest_orient (3, 0);
+  std::vector<float> new_chest_ang_vel (3, 0);
+  new_chest_orient[1] = 0.1;
+  new_chest_orient[2] = chest_heading;
+  float chest_time = 1.0;
+  chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(1.0, new_chest_orient, new_chest_ang_vel));
   
   //Publish All Trajectories
   trajectory_list_msg.left_arm_trajectory_message = left_arm_msg;
@@ -2090,13 +2285,8 @@ Solar_Components_Driver::deployPanel(Map_Scan* map_scan, pcl::PointCloud<pcl::Po
   left_arm_msg = trajectory_generation.appendTrajectoryPoint(6.0, left_arm_swing, ang_vel, left_arm_msg);
   left_arm_swing = deployPanelTrajectory(LEFT, 3);
   left_arm_msg = trajectory_generation.appendTrajectoryPoint(7.0, left_arm_swing, ang_vel, left_arm_msg);
-  //left_arm_swing = deployPanelTrajectory(LEFT, 4);
-  //left_arm_msg = trajectory_generation.appendTrajectoryPoint(8.0, left_arm_swing, ang_vel, left_arm_msg);
-  //left_arm_swing = deployPanelTrajectory(LEFT, 3);
-  //left_arm_msg = trajectory_generation.appendTrajectoryPoint(9.0, left_arm_swing, ang_vel, left_arm_msg);
   
-  std::vector<float> right_arm_swing = grabTableTrajectory(RIGHT, 7);
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(0.5, right_arm_swing, ang_vel, right_arm_msg);
+  std::vector<float> right_arm_swing = grabTableTrajectory(RIGHT, 0);
   right_arm_swing = deployPanelTrajectory(RIGHT, 0);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(1.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = deployPanelTrajectory(RIGHT, 1);
@@ -2106,15 +2296,19 @@ Solar_Components_Driver::deployPanel(Map_Scan* map_scan, pcl::PointCloud<pcl::Po
   right_arm_swing = deployPanelTrajectory(RIGHT, 2);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(6.0, right_arm_swing, ang_vel, right_arm_msg);
   
+  int num_angle = round(yaw / M_PI_4);
+  float chest_heading = num_angle * M_PI_4;
+  ROS_INFO("Corrected Heading: %f", chest_heading);
+  
   chest_msg.execution_mode = ihmc_msgs::ChestTrajectoryRosMessage::OVERRIDE;
   std::vector<float> new_chest_orient (3, 0);
   std::vector<float> new_chest_ang_vel (3, 0);
   new_chest_orient[1] = 0.2;
-  new_chest_orient[2] = yaw + 0.6;
+  new_chest_orient[2] = chest_heading + 0.6;
   chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(1.0, new_chest_orient, new_chest_ang_vel));
   chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(6.0, new_chest_orient, new_chest_ang_vel));
   new_chest_orient[1] = 0.2;
-  new_chest_orient[2] = yaw + 0.3;
+  new_chest_orient[2] = chest_heading + 0.3;
   chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(7.0, new_chest_orient, new_chest_ang_vel));
   
   pelvis_msg.execution_mode = ihmc_msgs::PelvisTrajectoryRosMessage::OVERRIDE;
@@ -2149,10 +2343,10 @@ Solar_Components_Driver::deployPanel(Map_Scan* map_scan, pcl::PointCloud<pcl::Po
   trajectoryRightHandPublisher.publish(right_fingers);
   ros::Duration(4.0).sleep();
   finger_pos[0] = 0.0;
-  finger_pos[1] = -1.0;
-  finger_pos[2] = -1.0;
-  finger_pos[3] = -1.0;
-  finger_pos[4] = -1.0;
+  finger_pos[1] = -1.3;
+  finger_pos[2] = -1.3;
+  finger_pos[3] = -1.3;
+  finger_pos[4] = -1.3;
   left_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
   trajectoryLeftHandPublisher.publish(left_fingers);
   ros::Duration(3.0).sleep();
@@ -2190,6 +2384,10 @@ Solar_Components_Driver::deployPanel(Map_Scan* map_scan, pcl::PointCloud<pcl::Po
   orient[2] = yaw+0.6 - 2.0;
   pos[0] = button_point[0];
   pos[1] = button_point[1];
+  pos[2] = 1.4;
+  left_hand_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSE3(1.0, pos, orient, line_vel, ang_vel_se3));
+  pos[0] = button_point[0];
+  pos[1] = button_point[1];
   pos[2] = 1.1;
   left_hand_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSE3(2.0, pos, orient, line_vel, ang_vel_se3));
   pos[0] = button_point[0];
@@ -2207,7 +2405,7 @@ Solar_Components_Driver::deployPanel(Map_Scan* map_scan, pcl::PointCloud<pcl::Po
   trajectory_list_msg.left_foot_trajectory_message = left_foot_msg;
   trajectory_list_msg.right_foot_trajectory_message = right_foot_msg;
   x_publisher.publish(trajectory_list_msg);
-  ros::Duration(2.5).sleep();
+  ros::Duration(3.0).sleep();
 }
 
 void
@@ -2256,11 +2454,11 @@ Solar_Components_Driver::grabCable()
   left_foot_msg.robot_side = LEFT;
   right_foot_msg.robot_side = RIGHT;
   
-  std::vector<float> left_arm_swing = grabTableTrajectory(LEFT, 7);
+  std::vector<float> left_arm_swing = grabCableTrajectory(LEFT, 7);
   std::vector<float> ang_vel(7, 0);
-  left_arm_msg = trajectory_generation.appendTrajectoryPoint(1.0, left_arm_swing, ang_vel, left_arm_msg);
-  left_arm_swing = grabCableTrajectory(LEFT, 0);
   left_arm_msg = trajectory_generation.appendTrajectoryPoint(3.0, left_arm_swing, ang_vel, left_arm_msg);
+  left_arm_swing = grabCableTrajectory(LEFT, 0);
+  left_arm_msg = trajectory_generation.appendTrajectoryPoint(4.0, left_arm_swing, ang_vel, left_arm_msg);
   
   std::vector<float> right_arm_swing = dropPanelTrajectory(RIGHT, 0);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(1.0, right_arm_swing, ang_vel, right_arm_msg);
@@ -2273,29 +2471,36 @@ Solar_Components_Driver::grabCable()
   right_arm_swing = grabCableTrajectory(RIGHT, 0);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(6.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = grabCableTrajectory(RIGHT, 1);
+  right_arm_swing[1] -= 0.2;
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(8.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = grabCableTrajectory(RIGHT, 2);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(10.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = grabCableTrajectory(RIGHT, 3);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(11.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = grabCableTrajectory(RIGHT, 4);
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(14.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(16.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = grabCableTrajectory(RIGHT, 6);
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(17.0, right_arm_swing, ang_vel, right_arm_msg);
-  right_arm_swing = grabCableTrajectory(RIGHT, 7);
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(18.0, right_arm_swing, ang_vel, right_arm_msg);
-  right_arm_swing = grabCableTrajectory(RIGHT, 8);
   right_arm_msg = trajectory_generation.appendTrajectoryPoint(20.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_swing = grabCableTrajectory(RIGHT, 7);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(23.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(24.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_swing = grabCableTrajectory(RIGHT, 8);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(28.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(30.0, right_arm_swing, ang_vel, right_arm_msg);
   right_arm_swing = grabCableTrajectory(RIGHT, 5);
-  right_arm_msg = trajectory_generation.appendTrajectoryPoint(21.0, right_arm_swing, ang_vel, right_arm_msg);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(33.0, right_arm_swing, ang_vel, right_arm_msg);
+  
+  int num_angle = round(yaw / M_PI_4);
+  float chest_heading = num_angle * M_PI_4;
+  ROS_INFO("Corrected Heading: %f", chest_heading);
   
   chest_msg.execution_mode = ihmc_msgs::ChestTrajectoryRosMessage::OVERRIDE;
   std::vector<float> new_chest_orient (3, 0);
   std::vector<float> new_chest_ang_vel (3, 0);
   new_chest_orient[1] = 0.3;
-  new_chest_orient[2] = yaw;
+  new_chest_orient[2] = chest_heading;
   float chest_time = 1.0;
-  chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(0.0, new_chest_orient, new_chest_ang_vel));
+  chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(1.0, new_chest_orient, new_chest_ang_vel));
   
   pelvis_msg.execution_mode = ihmc_msgs::PelvisTrajectoryRosMessage::OVERRIDE;
   pelvis_msg.taskspace_trajectory_points.push_back(trajectory_generation.createPelvisHeightTrajectoryPoint(0.5, 0.95));
@@ -2330,42 +2535,67 @@ Solar_Components_Driver::grabCable()
   ros::Duration(10.0).sleep();
   finger_pos[0] = 1.5;
   finger_pos[1] = 0.9;
-  finger_pos[2] = 0.08;
+  finger_pos[2] = 0.0;
   finger_pos[3] = 0.0;
   finger_pos[4] = 0.0;
   right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
   trajectoryRightHandPublisher.publish(right_fingers);
-  ros::Duration(2.5).sleep();
+  ros::Duration(3.3).sleep();
   finger_pos[0] = 1.5;
   finger_pos[1] = 0.9;
   finger_pos[2] = 0.3;
-  finger_pos[3] = 0.2;
-  finger_pos[4] = 0.1;
+  finger_pos[3] = 0.0;
+  finger_pos[4] = 0.0;
   right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
   trajectoryRightHandPublisher.publish(right_fingers);
-  ros::Duration(1.5).sleep();
-  finger_pos[0] = 1.3;
+  ros::Duration(0.6).sleep();
+  finger_pos[0] = 1.35;
   finger_pos[1] = 0.9;
-  finger_pos[2] = 0.9;
-  finger_pos[3] = 0.2;
-  finger_pos[4] = 0.2;
+  finger_pos[2] = 1.0;
+  finger_pos[3] = 0.0;
+  finger_pos[4] = 0.0;
   right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
   trajectoryRightHandPublisher.publish(right_fingers);
-  ros::Duration(4.0).sleep();
-  finger_pos[0] = 1.3;
+  ros::Duration(8.0).sleep();
+  finger_pos[0] = 1.35;
+  finger_pos[1] = 0.9;
+  finger_pos[2] = 1.0;
+  finger_pos[3] = 0.0;
+  finger_pos[4] = 0.0;
+  right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
+  trajectoryRightHandPublisher.publish(right_fingers);
+  ros::Duration(1.0).sleep();
+  finger_pos[0] = 1.35;
+  finger_pos[1] = 1.0;
+  finger_pos[2] = 1.0;
+  finger_pos[3] = 0.0;
+  finger_pos[4] = 0.0;
+  right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
+  trajectoryRightHandPublisher.publish(right_fingers);
+  ros::Duration(0.2).sleep();
+  finger_pos[0] = 1.4;
+  finger_pos[1] = 2.0;
+  finger_pos[2] = 1.0;
+  finger_pos[3] = 1.0;
+  finger_pos[4] = 0.0;
+  right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
+  trajectoryRightHandPublisher.publish(right_fingers);
+  ros::Duration(0.2).sleep();
+  finger_pos[0] = 1.4;
   finger_pos[1] = 2.0;
   finger_pos[2] = 2.0;
-  finger_pos[3] = 2.0;
-  finger_pos[4] = 2.0;
+  finger_pos[3] = 1.0;
+  finger_pos[4] = 1.0;
   right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
   trajectoryRightHandPublisher.publish(right_fingers);
-  ros::Duration(5.0).sleep();
+  ros::Duration(10.0).sleep();
 }
 
 void
-Solar_Components_Driver::plugCable(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map)
+Solar_Components_Driver::grabCable(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   X_Publisher x_publisher;
+  geometry_msgs::TransformStamped right_foot_sole = tfBuffer->lookupTransform(WORLD, RIGHT_FOOT_SOLE, ros::Time(0), ros::Duration(0.8));
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer->lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
   geometry_msgs::TransformStamped right_foot_ankle = tfBuffer->lookupTransform(WORLD, RIGHT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
   tf2Scalar left_roll;
@@ -2444,7 +2674,7 @@ Solar_Components_Driver::plugCable(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer
   float heading = yaw + M_PI;
   std::vector<float> base_location(3, 0);
   std::vector<float> tmp_location(3, 0);
-  base_location[0] = 0.6;
+  base_location[0] = 0.7;
   base_location[1] = -0.2;
   base_location[2] = 1.1;
   tmp_location[0] = base_location[0]*rotation[0][0] + base_location[1]*rotation[0][1] + base_location[2]*rotation[0][2];
@@ -2458,7 +2688,144 @@ Solar_Components_Driver::plugCable(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer
   std::vector<float> orient(3, 0);
   std::vector<float> line_vel(3, 0);
   std::vector<float> ang_vel(3, 0);
-  orient[0] = -0.0;
+  orient[0] = -0.2;
+  orient[1] = 0.2;
+  orient[2] = heading;
+  pos[0] = base_location[0];
+  pos[1] = base_location[1];
+  pos[2] = base_location[2];
+  right_hand_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSE3(2.0, pos, orient, line_vel, ang_vel));
+  
+  //Publish All Trajectories
+  trajectory_list_msg.left_arm_trajectory_message = left_arm_msg;
+  trajectory_list_msg.right_arm_trajectory_message = right_arm_msg;
+  trajectory_list_msg.left_hand_trajectory_message = left_hand_msg;
+  trajectory_list_msg.right_hand_trajectory_message = right_hand_msg;
+  trajectory_list_msg.chest_trajectory_message = chest_msg;
+  trajectory_list_msg.pelvis_trajectory_message = pelvis_msg;
+  trajectory_list_msg.left_foot_trajectory_message = left_foot_msg;
+  trajectory_list_msg.right_foot_trajectory_message = right_foot_msg;
+  
+  int num_cable_points = 0;
+  int num_plug_points = 0;
+  while(num_cable_points == 0 || num_plug_points == 0)
+  {
+    grabCable();
+    x_publisher.publish(trajectory_list_msg);
+    ros::Duration(2.0).sleep();
+    map_scan->lowTaskTwoPlugScan(map);
+    // Locate points of each point
+    for(int point_id = 0; point_id < map->points.size(); point_id++)
+    {
+      if(map->points[point_id].b == 0 && map->points[point_id].g == 200 && map->points[point_id].r == 255)
+      {
+        num_plug_points++;
+      }
+      if(map->points[point_id].g == 0 && map->points[point_id].r == 0 && map->points[point_id].b == 200 && map->points[point_id].z > 0.95 + right_foot_sole.transform.translation.z)
+      {
+        num_cable_points++;
+      }
+    }
+  }
+}
+
+void
+Solar_Components_Driver::plugCable(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* map)
+{
+  X_Publisher x_publisher;
+  geometry_msgs::TransformStamped left_foot_ankle = tfBuffer->lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  geometry_msgs::TransformStamped right_foot_ankle = tfBuffer->lookupTransform(WORLD, RIGHT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
+  tf2Scalar left_roll;
+  tf2Scalar left_pitch;
+  tf2Scalar left_yaw;
+  tf2Scalar right_roll;
+  tf2Scalar right_pitch;
+  tf2Scalar right_yaw;
+  tf2::Quaternion left_orientation(left_foot_ankle.transform.rotation.x, left_foot_ankle.transform.rotation.y, left_foot_ankle.transform.rotation.z, left_foot_ankle.transform.rotation.w);
+  tf2::Quaternion right_orientation(right_foot_ankle.transform.rotation.x, right_foot_ankle.transform.rotation.y, right_foot_ankle.transform.rotation.z, right_foot_ankle.transform.rotation.w);
+  tf2::Matrix3x3 left_rotation(left_orientation);
+  left_rotation.getRPY(left_roll, left_pitch, left_yaw);
+  tf2::Matrix3x3 right_rotation(right_orientation);
+  right_rotation.getRPY(right_roll, right_pitch, right_yaw);
+  tf2Scalar roll = (left_roll+right_roll)/2;
+  tf2Scalar pitch = (left_pitch+right_pitch)/2;
+  tf2Scalar yaw = (left_yaw+right_yaw)/2;
+  if(left_yaw < -M_PI_2 && right_yaw > M_PI_2)
+  {
+    if(yaw > 0)
+    {
+      yaw -= M_PI;
+    }
+    else
+    {
+      yaw += M_PI;
+    }
+  }
+  
+  geometry_msgs::Vector3 center_point = left_foot_ankle.transform.translation;
+  center_point.x += right_foot_ankle.transform.translation.x;
+  center_point.y += right_foot_ankle.transform.translation.y;
+  center_point.z += right_foot_ankle.transform.translation.z;
+  
+  center_point.x = center_point.x/2;
+  center_point.y = center_point.y/2;
+  center_point.z = center_point.z/2;
+  
+  // Set Valkyrie into starting configuration
+  ihmc_msgs::WholeBodyTrajectoryRosMessage trajectory_list_msg;
+  ihmc_msgs::ArmTrajectoryRosMessage left_arm_msg;
+  ihmc_msgs::ArmTrajectoryRosMessage right_arm_msg;
+  ihmc_msgs::HandTrajectoryRosMessage left_hand_msg;
+  ihmc_msgs::HandTrajectoryRosMessage right_hand_msg;
+  ihmc_msgs::ChestTrajectoryRosMessage chest_msg;
+  ihmc_msgs::PelvisTrajectoryRosMessage pelvis_msg;
+  ihmc_msgs::FootTrajectoryRosMessage left_foot_msg;
+  ihmc_msgs::FootTrajectoryRosMessage right_foot_msg;
+  
+  // Set unique ids to feature used messages
+  trajectory_list_msg.unique_id = 1;
+  left_arm_msg.unique_id = 0;
+  right_arm_msg.unique_id = 0;
+  left_hand_msg.unique_id = 0;
+  right_hand_msg.unique_id = 1;
+  chest_msg.unique_id = 0;
+  pelvis_msg.unique_id = 0;
+  left_foot_msg.unique_id = 0;
+  right_foot_msg.unique_id = 0;
+  
+  // Set sides per message group
+  left_arm_msg.robot_side = LEFT;
+  right_arm_msg.robot_side = RIGHT;
+  left_hand_msg.robot_side = LEFT;
+  right_hand_msg.robot_side = RIGHT;
+  left_foot_msg.robot_side = LEFT;
+  right_foot_msg.robot_side = RIGHT;
+  right_hand_msg.base_for_control = ihmc_msgs::HandTrajectoryRosMessage::CHEST;
+  
+  std::vector<float> plug_point(3, 0);
+  std::vector<float> cable_point(3, 0);
+  
+  
+  tf2::Matrix3x3 rotation;
+  rotation.setRPY(0.0, 0.0, yaw);
+  float heading = yaw + M_PI;
+  std::vector<float> base_location(3, 0);
+  std::vector<float> tmp_location(3, 0);
+  base_location[0] = 0.7;
+  base_location[1] = -0.2;
+  base_location[2] = center_point.z + 1.0;
+  tmp_location[0] = base_location[0]*rotation[0][0] + base_location[1]*rotation[0][1] + base_location[2]*rotation[0][2];
+  tmp_location[1] = base_location[0]*rotation[1][0] + base_location[1]*rotation[1][1] + base_location[2]*rotation[1][2];
+  tmp_location[2] = base_location[0]*rotation[2][0] + base_location[1]*rotation[2][1] + base_location[2]*rotation[2][2];
+  base_location[0] = tmp_location[0] + center_point.x;
+  base_location[1] = tmp_location[1] + center_point.y;
+  base_location[2] = tmp_location[2] + center_point.z;
+  
+  std::vector<float> pos(3, 0);
+  std::vector<float> orient(3, 0);
+  std::vector<float> line_vel(3, 0);
+  std::vector<float> ang_vel(3, 0);
+  orient[0] = -0.2;
   orient[1] = 0.2;
   orient[2] = heading;
   pos[0] = base_location[0];
@@ -2500,6 +2867,7 @@ Solar_Components_Driver::plugCable(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer
   right_hand_msg.taskspace_trajectory_points.clear();
   pos[0] += plug_point[0] - cable_point[0];
   pos[1] += plug_point[1] - cable_point[1];
+  pos[2] -= 0.06;
   right_hand_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSE3(2.0, pos, orient, line_vel, ang_vel));
   
   ROS_INFO("XYZ location:\t%f\t%f\t%f", plug_point[0] - cable_point[0], plug_point[1] - cable_point[1], plug_point[2] - cable_point[2]);
@@ -2516,90 +2884,50 @@ Solar_Components_Driver::plugCable(Map_Scan* map_scan, tf2_ros::Buffer* tfBuffer
   x_publisher.publish(trajectory_list_msg);
   ros::Duration(2.0).sleep();
   
-  map_scan->lowTaskTwoPlugScan(map);
-  
-  // Locate points of each point
-  for(int point_id = 0; point_id < map->points.size(); point_id++)
+  for(int lower = 0; lower <= 6; lower ++)
   {
-    if(map->points[point_id].g == 0 && map->points[point_id].r == 0 && map->points[point_id].b == 200)
+    map_scan->lowTaskTwoPlugScan(map);
+    
+    // Locate points of each point
+    for(int point_id = 0; point_id < map->points.size(); point_id++)
     {
-      cable_point[0] = map->points[point_id].x;
-      cable_point[1] = map->points[point_id].y;
-      cable_point[2] = map->points[point_id].z;
+      if(map->points[point_id].g == 0 && map->points[point_id].r == 0 && map->points[point_id].b == 200)
+      {
+        cable_point[0] = map->points[point_id].x;
+        cable_point[1] = map->points[point_id].y;
+        cable_point[2] = map->points[point_id].z;
+      }
     }
+    
+    right_hand_msg.taskspace_trajectory_points.clear();
+    pos[0] += plug_point[0] - cable_point[0];
+    pos[1] += plug_point[1] - cable_point[1];
+    pos[2] -= 0.01;
+    right_hand_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSE3(1.0, pos, orient, line_vel, ang_vel));
+    
+    ROS_INFO("XYZ location:\t%f\t%f\t%f", plug_point[0] - cable_point[0], plug_point[1] - cable_point[1], plug_point[2] - cable_point[2]);
+    
+    //Publish All Trajectories
+    trajectory_list_msg.left_arm_trajectory_message = left_arm_msg;
+    trajectory_list_msg.right_arm_trajectory_message = right_arm_msg;
+    trajectory_list_msg.left_hand_trajectory_message = left_hand_msg;
+    trajectory_list_msg.right_hand_trajectory_message = right_hand_msg;
+    trajectory_list_msg.chest_trajectory_message = chest_msg;
+    trajectory_list_msg.pelvis_trajectory_message = pelvis_msg;
+    trajectory_list_msg.left_foot_trajectory_message = left_foot_msg;
+    trajectory_list_msg.right_foot_trajectory_message = right_foot_msg;
+    x_publisher.publish(trajectory_list_msg);
+    ros::Duration(2.0).sleep();
   }
-  
-  right_hand_msg.taskspace_trajectory_points.clear();
-  pos[0] += plug_point[0] - cable_point[0];
-  pos[1] += plug_point[1] - cable_point[1];
-  pos[2] -= 0.12;
-  
-  rotation.setRPY(0.0, 0.0, yaw);
-  base_location[0] = 0.02;
-  base_location[1] = -0.02;
-  base_location[2] = 0.0;
-  tmp_location[0] = base_location[0]*rotation[0][0] + base_location[1]*rotation[0][1] + base_location[2]*rotation[0][2];
-  tmp_location[1] = base_location[0]*rotation[1][0] + base_location[1]*rotation[1][1] + base_location[2]*rotation[1][2];
-  tmp_location[2] = base_location[0]*rotation[2][0] + base_location[1]*rotation[2][1] + base_location[2]*rotation[2][2];
-  base_location[0] = tmp_location[0] + pos[0];
-  base_location[1] = tmp_location[1] + pos[1];
-  base_location[2] = tmp_location[2] + pos[2];
-  right_hand_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSE3(2.0, base_location, orient, line_vel, ang_vel));
-  
-  base_location[0] = -0.02;
-  base_location[1] = 0.02;
-  base_location[2] = 0.0;
-  tmp_location[0] = base_location[0]*rotation[0][0] + base_location[1]*rotation[0][1] + base_location[2]*rotation[0][2];
-  tmp_location[1] = base_location[0]*rotation[1][0] + base_location[1]*rotation[1][1] + base_location[2]*rotation[1][2];
-  tmp_location[2] = base_location[0]*rotation[2][0] + base_location[1]*rotation[2][1] + base_location[2]*rotation[2][2];
-  base_location[0] = tmp_location[0] + pos[0];
-  base_location[1] = tmp_location[1] + pos[1];
-  base_location[2] = tmp_location[2] + pos[2];
-  right_hand_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSE3(8.0, base_location, orient, line_vel, ang_vel));
-  
-  base_location[0] = -0.0;
-  base_location[1] = 0.02;
-  base_location[2] = 0.0;
-  tmp_location[0] = base_location[0]*rotation[0][0] + base_location[1]*rotation[0][1] + base_location[2]*rotation[0][2];
-  tmp_location[1] = base_location[0]*rotation[1][0] + base_location[1]*rotation[1][1] + base_location[2]*rotation[1][2];
-  tmp_location[2] = base_location[0]*rotation[2][0] + base_location[1]*rotation[2][1] + base_location[2]*rotation[2][2];
-  base_location[0] = tmp_location[0] + pos[0];
-  base_location[1] = tmp_location[1] + pos[1];
-  base_location[2] = tmp_location[2] + pos[2];
-  right_hand_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSE3(10.0, base_location, orient, line_vel, ang_vel));
-  
-  base_location[0] = 0.02;
-  base_location[1] = 0.02;
-  base_location[2] = 0.0;
-  tmp_location[0] = base_location[0]*rotation[0][0] + base_location[1]*rotation[0][1] + base_location[2]*rotation[0][2];
-  tmp_location[1] = base_location[0]*rotation[1][0] + base_location[1]*rotation[1][1] + base_location[2]*rotation[1][2];
-  tmp_location[2] = base_location[0]*rotation[2][0] + base_location[1]*rotation[2][1] + base_location[2]*rotation[2][2];
-  base_location[0] = tmp_location[0] + pos[0];
-  base_location[1] = tmp_location[1] + pos[1];
-  base_location[2] = tmp_location[2] + pos[2];
-  right_hand_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSE3(12.0, base_location, orient, line_vel, ang_vel));
-  
-  ROS_INFO("XYZ location:\t%f\t%f\t%f", plug_point[0] - cable_point[0], plug_point[1] - cable_point[1], plug_point[2] - cable_point[2]);
-  
-  //Publish All Trajectories
-  trajectory_list_msg.left_arm_trajectory_message = left_arm_msg;
-  trajectory_list_msg.right_arm_trajectory_message = right_arm_msg;
-  trajectory_list_msg.left_hand_trajectory_message = left_hand_msg;
-  trajectory_list_msg.right_hand_trajectory_message = right_hand_msg;
-  trajectory_list_msg.chest_trajectory_message = chest_msg;
-  trajectory_list_msg.pelvis_trajectory_message = pelvis_msg;
-  trajectory_list_msg.left_foot_trajectory_message = left_foot_msg;
-  trajectory_list_msg.right_foot_trajectory_message = right_foot_msg;
-  x_publisher.publish(trajectory_list_msg);
-  ros::Duration(8.0).sleep();
 }
 
 void
 Solar_Components_Driver::resetStance(std::vector<float> next_point)
 {
-  X_Publisher x_publisher;
   tf2_ros::Buffer tfBuffer(ros::Duration(1.0), true);
   tf2_ros::TransformListener tfListener(tfBuffer);
+  geometry_msgs::TransformStamped pelvis = tfBuffer.lookupTransform(WORLD, PELVIS, ros::Time(0), ros::Duration(0.2));
+  
   geometry_msgs::TransformStamped left_foot_ankle = tfBuffer.lookupTransform(WORLD, LEFT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
   geometry_msgs::TransformStamped right_foot_ankle = tfBuffer.lookupTransform(WORLD, RIGHT_FOOT_ANKLE, ros::Time(0), ros::Duration(0.2));
   tf2Scalar left_roll;
@@ -2627,6 +2955,91 @@ Solar_Components_Driver::resetStance(std::vector<float> next_point)
   center_point.y = center_point.y/2;
   center_point.z = center_point.z/2;
   
+  tf2::Quaternion pelvis_heading(pelvis.transform.rotation.x, pelvis.transform.rotation.y, pelvis.transform.rotation.z, pelvis.transform.rotation.w);
+  tf2Scalar pelvis_roll;
+  tf2Scalar pelvis_pitch;
+  tf2Scalar pelvis_yaw;
+  tf2::Matrix3x3 pelvis_rotation(pelvis_heading);
+  pelvis_rotation.getRPY(pelvis_roll, pelvis_pitch, pelvis_yaw);
+  pelvis_rotation.setRPY(0.0, 0.0, pelvis_yaw);
+  X_Publisher x_publisher;
+  std_msgs::Float64MultiArray left_fingers;
+  std_msgs::Float64MultiArray right_fingers;
+  std::vector<float> finger_pos(5, 0);
+  finger_pos[0] = 1.5;
+  finger_pos[1] = 0.4;
+  finger_pos[2] = 0.0;
+  finger_pos[3] = 0.0;
+  finger_pos[4] = 0.0;
+  right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
+  trajectoryRightHandPublisher.publish(right_fingers);
+  finger_pos[0] = 1.5;
+  finger_pos[1] = -0.4;
+  finger_pos[2] = -0.0;
+  finger_pos[3] = -0.0;
+  finger_pos[4] = -0.0;
+  left_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
+  trajectoryLeftHandPublisher.publish(left_fingers);
+  // Set Valkyrie into starting configuration
+  ihmc_msgs::WholeBodyTrajectoryRosMessage trajectory_list_msg;
+  ihmc_msgs::ArmTrajectoryRosMessage left_arm_msg;
+  ihmc_msgs::ArmTrajectoryRosMessage right_arm_msg;
+  ihmc_msgs::HandTrajectoryRosMessage left_hand_msg;
+  ihmc_msgs::HandTrajectoryRosMessage right_hand_msg;
+  ihmc_msgs::ChestTrajectoryRosMessage chest_msg;
+  ihmc_msgs::PelvisTrajectoryRosMessage pelvis_msg;
+  ihmc_msgs::FootTrajectoryRosMessage left_foot_msg;
+  ihmc_msgs::FootTrajectoryRosMessage right_foot_msg;
+  
+  // Set unique ids to feature used messages
+  trajectory_list_msg.unique_id = 1;
+  left_arm_msg.unique_id = 1;
+  right_arm_msg.unique_id = 1;
+  left_hand_msg.unique_id = 0;
+  right_hand_msg.unique_id = 0;
+  chest_msg.unique_id = 1;
+  pelvis_msg.unique_id = 1;
+  left_foot_msg.unique_id = 0;
+  right_foot_msg.unique_id = 0;
+  
+  // Set sides per message group
+  left_arm_msg.robot_side = LEFT;
+  right_arm_msg.robot_side = RIGHT;
+  left_hand_msg.robot_side = LEFT;
+  right_hand_msg.robot_side = RIGHT;
+  left_foot_msg.robot_side = LEFT;
+  right_foot_msg.robot_side = RIGHT;
+  
+  std::vector<float> left_arm_swing = getArmAtRest(LEFT);
+  std::vector<float> ang_vel(7, 0);
+  left_arm_msg = trajectory_generation.appendTrajectoryPoint(1.0, left_arm_swing, ang_vel, left_arm_msg);
+  
+  std::vector<float> right_arm_swing = getArmAtRest(RIGHT);
+  right_arm_msg = trajectory_generation.appendTrajectoryPoint(1.0, right_arm_swing, ang_vel, right_arm_msg);
+  
+  chest_msg.execution_mode = ihmc_msgs::ChestTrajectoryRosMessage::OVERRIDE;
+  std::vector<float> new_chest_orient (3, 0);
+  std::vector<float> new_chest_ang_vel (3, 0);
+  new_chest_orient[1] = 0.1;
+  new_chest_orient[2] = pelvis_yaw;
+  float chest_time = 1.0;
+  chest_msg.taskspace_trajectory_points.push_back(trajectory_generation.createSO3TrajectoryOrient(1.5, new_chest_orient, new_chest_ang_vel));
+  
+  pelvis_msg.execution_mode = ihmc_msgs::PelvisTrajectoryRosMessage::OVERRIDE;
+  pelvis_msg.taskspace_trajectory_points.push_back(trajectory_generation.createPelvisHeightTrajectoryPoint(1.5, 0.95));
+  
+  //Publish All Trajectories
+  trajectory_list_msg.left_arm_trajectory_message = left_arm_msg;
+  trajectory_list_msg.right_arm_trajectory_message = right_arm_msg;
+  trajectory_list_msg.left_hand_trajectory_message = left_hand_msg;
+  trajectory_list_msg.right_hand_trajectory_message = right_hand_msg;
+  trajectory_list_msg.chest_trajectory_message = chest_msg;
+  trajectory_list_msg.pelvis_trajectory_message = pelvis_msg;
+  trajectory_list_msg.left_foot_trajectory_message = left_foot_msg;
+  trajectory_list_msg.right_foot_trajectory_message = right_foot_msg;
+  x_publisher.publish(trajectory_list_msg);
+  ros::Duration(2.0);
+  
   float distance = sqrt(pow(fabs(next_point[0]-center_point.x), 2.0) + pow(fabs(next_point[1]-center_point.y), 2.0));
   float heading = asin((next_point[1]-center_point.y)/distance);
   if(next_point[0]-center_point.x <= 0)
@@ -2641,10 +3054,7 @@ Solar_Components_Driver::resetStance(std::vector<float> next_point)
     }
   }
   
-  trajectoryListPublisher.publish(gait_generation.createStanceReset().trajectory_list_msg);
   trajectoryNeckPublisher.publish(gait_generation.createStanceReset().trajectory_neck_msg);
-  trajectoryLeftHandPublisher.publish(gait_generation.createStanceReset().trajectory_finger_left_msg);
-  trajectoryRightHandPublisher.publish(gait_generation.createStanceReset().trajectory_finger_right_msg);
   ihmc_msgs::FootstepDataListRosMessage step_list_msg;
   x_vector destination;
   destination.x = -0.5;
@@ -2675,31 +3085,7 @@ Solar_Components_Driver::resetStance(std::vector<float> next_point)
     step_list_msg = gait_generation.createLowerBodyRotateGaitQueue(step_list_msg, heading-yaw);
   }
   x_publisher.publish(step_list_msg);
-  std_msgs::Float64MultiArray left_fingers;
-  std_msgs::Float64MultiArray right_fingers;
-  std::vector<float> finger_pos(5, 0);
-  finger_pos[0] = 1.5;
-  finger_pos[1] = 0.0;
-  finger_pos[2] = 0.0;
-  finger_pos[3] = 0.0;
-  finger_pos[4] = 0.0;
-  right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
-  trajectoryRightHandPublisher.publish(right_fingers);
-  finger_pos[0] = 1.5;
-  finger_pos[1] = -0.0;
-  finger_pos[2] = -0.0;
-  finger_pos[3] = -0.0;
-  finger_pos[4] = -0.0;
-  left_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
-  trajectoryLeftHandPublisher.publish(left_fingers);
-  ros::Duration(1.0).sleep();
-  finger_pos[0] = 0.5;
-  finger_pos[1] = -0.6;
-  finger_pos[2] = -0.2;
-  finger_pos[3] = -0.2;
-  finger_pos[4] = -0.2;
-  left_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
-  trajectoryLeftHandPublisher.publish(left_fingers);
+  x_publisher.publish(gait_generation.createStanceReset().trajectory_list_msg);
   finger_pos[0] = 0.5;
   finger_pos[1] = 0.6;
   finger_pos[2] = 0.2;
@@ -2707,5 +3093,37 @@ Solar_Components_Driver::resetStance(std::vector<float> next_point)
   finger_pos[4] = 0.2;
   right_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
   trajectoryRightHandPublisher.publish(right_fingers);
+  finger_pos[0] = 0.5;
+  finger_pos[1] = -0.6;
+  finger_pos[2] = -0.2;
+  finger_pos[3] = -0.2;
+  finger_pos[4] = -0.2;
+  left_fingers = trajectory_generation.createFingerTrajectory(finger_pos);
+  trajectoryLeftHandPublisher.publish(left_fingers);
+}
+
+std::vector<float>
+Solar_Components_Driver::getArmAtRest(bool robot_side)
+{
+  std::vector<float> arm_at_rest(7, 0);
+  
+  if(robot_side == LEFT)
+  {
+    arm_at_rest[0] = 0.3;
+    arm_at_rest[1] = -1.33;
+    arm_at_rest[2] = -0.5;
+    arm_at_rest[3] = -1.9;
+    arm_at_rest[4] = 1.9;
+  }
+  else if(robot_side == RIGHT)
+  {
+    arm_at_rest[0] = 0.3;
+    arm_at_rest[1] = 1.33;
+    arm_at_rest[2] = -0.5;
+    arm_at_rest[3] = 1.9;
+    arm_at_rest[4] = 1.9;
+  }
+  
+  return arm_at_rest;
 }
 

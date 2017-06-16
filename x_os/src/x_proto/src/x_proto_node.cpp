@@ -58,7 +58,6 @@ int main(int argc, char **argv)
   Habitat_Driver habitat_driver;
   
   solar_components_driver.dropPanel();
-  solar_components_driver.deployPanel(&map_scan, &map);
   
   return 0;
 }

@@ -84,6 +84,10 @@ class Map_Scan
     void
     RedRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
     bool
+    BlackFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    BlackRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    bool
     BlueFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
     void
     BlueRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
@@ -91,8 +95,12 @@ class Map_Scan
     GoldRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
     bool
     GoldFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    YellowRemovalFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
     bool
     HandleCorrectFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    bool
+    CableCorrectFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
   
   public:
     Map_Scan();
@@ -140,6 +148,8 @@ class Map_Scan
     void
     wideTaskTwoHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
+    simpleTaskThreeHandleScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
     wideTaskThreeComponentsScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
     simpleTaskTwoCableScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
@@ -153,8 +163,12 @@ class Map_Scan
     lowTaskTwoPlugScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     void
     wideTaskThreeStairScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
+    wideLowTaskThreeStairScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
     bool
     YellowFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    generateHabitat(pcl::PointCloud<pcl::PointXYZRGB>* input);
 };
 
 #endif

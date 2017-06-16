@@ -438,6 +438,15 @@ Gait_Generation::createLowerBodyRotateGaitOverride(float heading)
   yaw += heading;
   rotation.setRPY(0.0, 0.0, yaw);
   
+  if(yaw < -M_PI)
+  {
+    yaw += 2*M_PI;
+  }
+  else if(yaw > M_PI)
+  {
+    yaw -= 2*M_PI;
+  }
+  
   std::vector<float> new_step_pos_left (3, 0);
   new_step_pos_left[0] = 0.0;
   new_step_pos_left[1] = DEFAULT_STEP_SEPERATION/2;
@@ -1165,12 +1174,29 @@ Gait_Generation::createLowerBodyRotateGaitQueue(ihmc_msgs::FootstepDataListRosMe
     yaw += 0.06;
     new_step_seperation[1] = DEFAULT_STEP_SEPERATION/2;
   }
+  if(yaw < -M_PI)
+  {
+    yaw += 2*M_PI;
+  }
+  else if(yaw > M_PI)
+  {
+    yaw -= 2*M_PI;
+  }
   last_heading.setRPY(0.0, 0.0, yaw);
   last_known_pos[0] += new_step_seperation[0]*last_heading[0][0] + new_step_seperation[1]*last_heading[0][1] + new_step_seperation[2]*last_heading[0][2];
   last_known_pos[1] += new_step_seperation[0]*last_heading[1][0] + new_step_seperation[1]*last_heading[1][1] + new_step_seperation[2]*last_heading[1][2];
   last_known_pos[2] += new_step_seperation[0]*last_heading[2][0] + new_step_seperation[1]*last_heading[2][1] + new_step_seperation[2]*last_heading[2][2];
   yaw += heading;
   last_heading.setRPY(0.0, 0.0, yaw);
+  
+  if(yaw < -M_PI)
+  {
+    yaw += 2*M_PI;
+  }
+  else if(yaw > M_PI)
+  {
+    yaw -= 2*M_PI;
+  }
   
   std::vector<float> new_step_pos_left (3, 0);
   new_step_pos_left[0] = 0.0;
@@ -1785,7 +1811,7 @@ Gait_Generation::createLowerBodyLinearGaitOffsetQueue(ihmc_msgs::FootstepDataLis
   {
     while(fabs(new_step_pos[0]) <= fabs(destination.x) - 0.01)
     {
-      if(fabs(destination.x) - fabs(new_step_pos[0]) < fabs(step_distance_x))
+      if(fabs(destination.x) - fabs(new_step_pos[0]) < 2.5*fabs(step_distance_x))
       {
         new_step_pos[0] = destination.x;
         new_step_pos[1] = destination.y;

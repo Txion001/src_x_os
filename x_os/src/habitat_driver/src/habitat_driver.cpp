@@ -134,17 +134,17 @@ Habitat_Driver::climbStairs(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::Poin
   ihmc_msgs::FootstepDataListRosMessage step_list_msg;
   step_list_msg = gait_generation.createLowerBodyRotateGaitOverride(heading - yaw);
   x_vector destination;
-  destination.x = distance_to_stairs - 0.296;
+  destination.x = distance_to_stairs - 0.295;
   destination.y = 0;
   destination.z = 0;
   step_list_msg = gait_generation.createLowerBodyLinearGaitOffsetQueue(step_list_msg, destination, 0.0);
   step_list_msg = gait_generation.createLowerBodyEndStepQueue(step_list_msg);
   x_publisher.publish(step_list_msg);
   
-  destination.x = 2.21;
+  destination.x = 2.22;
   destination.y = 0;
   destination.z = 1.8;
-  step_list_msg = gait_generation.createLowerBodyLinearGaitStairOverride(destination, 0.0, 0.2415);
+  step_list_msg = gait_generation.createLowerBodyLinearGaitStairOverride(destination, 0.0, 0.244);
   step_list_msg = gait_generation.createLowerBodyEndStepStairQueue(step_list_msg, 1.8 - 0.16);
   x_publisher.publish(trajectory_list_msg);
   ros::Duration(1.0).sleep();
@@ -261,6 +261,7 @@ Habitat_Driver::walkToDoor(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::Point
   step_list_msg = gait_generation.createLowerBodyLinearGaitQueue(step_list_msg, destination, 0.0);
   step_list_msg = gait_generation.createLowerBodyEndStepQueue(step_list_msg);
   x_publisher.publish(step_list_msg);
+  x_publisher.publish(gait_generation.createStanceReset().trajectory_list_msg);
 }
 
 void
@@ -639,6 +640,7 @@ Habitat_Driver::enterHab()
   step_list_msg = gait_generation.createLowerBodyLinearGaitOffsetQueue(step_list_msg, destination, 0.0);
   step_list_msg = gait_generation.createLowerBodyEndStepQueue(step_list_msg);
   x_publisher.publish(step_list_msg);
+  x_publisher.publish(gait_generation.createStanceReset().trajectory_list_msg);
 }
 void
 Habitat_Driver::alignToDetector(tf2_ros::Buffer* tfBuffer, pcl::PointCloud<pcl::PointXYZRGB>* input)

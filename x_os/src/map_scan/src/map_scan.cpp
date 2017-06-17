@@ -1158,10 +1158,52 @@ Map_Scan::overHangTaskThreeFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
   for(int point_id = 0; point_id < input->points.size(); point_id++)
   {
     float distance_comparison = sqrt(pow(cloud_point.x - input->points[point_id].x, 2.0) + pow(cloud_point.y - input->points[point_id].y, 2.0));
-    if(distance_comparison < 0.750 && !((input->points[point_id].g == 100 && input->points[point_id].b == 200 && input->points[point_id].r == 0) && (input->points[point_id].g == 200 && input->points[point_id].b == 200 && input->points[point_id].r == 50)))
+    if(distance_comparison < 0.8750 && !((input->points[point_id].g == 100 && input->points[point_id].b == 200 && input->points[point_id].r == 0) && (input->points[point_id].g == 200 && input->points[point_id].b == 200 && input->points[point_id].r == 50)))
     {
       input->points.erase(input->points.begin() + point_id);
       point_id -= 1;
+    }
+  }
+}
+
+void
+Map_Scan::overHangTaskThreeRailFilter(pcl::PointCloud<pcl::PointXYZRGB>* input)
+{
+  pcl::PointXYZRGB left_cloud_point;
+  left_cloud_point.x = 0.0;
+  left_cloud_point.y = 0.0;
+  left_cloud_point.z = 0.0;
+  pcl::PointXYZRGB right_cloud_point;
+  right_cloud_point.x = 0.0;
+  right_cloud_point.y = 0.0;
+  right_cloud_point.z = 0.0;
+  ROS_INFO("Removal Filter");
+  for(unsigned long point_id = 0; point_id < input->points.size(); point_id++)
+  {
+    if(input->points[point_id].g == 100 && input->points[point_id].r == 255 && input->points[point_id].b == 0)
+    {
+      left_cloud_point.x = input->points[point_id].x;
+      left_cloud_point.y = input->points[point_id].y;
+      left_cloud_point.z = input->points[point_id].z;
+      ROS_INFO("Point Found");
+    }
+    if(input->points[point_id].g == 255 && input->points[point_id].r == 100 && input->points[point_id].b == 0)
+    {
+      right_cloud_point.x = input->points[point_id].x;
+      right_cloud_point.y = input->points[point_id].y;
+      right_cloud_point.z = input->points[point_id].z;
+      ROS_INFO("Point Found");
+    }
+  }
+  
+  for(int point_id_input = 0; point_id_input < input->points.size(); point_id_input++)
+  {
+    float distance_comparison_left = sqrt(pow(left_cloud_point.x - input->points[point_id_input].x, 2.0) + pow(left_cloud_point.y - input->points[point_id_input].y, 2.0));
+    float distance_comparison_right = sqrt(pow(right_cloud_point.x - input->points[point_id_input].x, 2.0) + pow(right_cloud_point.y - input->points[point_id_input].y, 2.0));
+    if((distance_comparison_left < 0.875 || distance_comparison_right < 0.875)  && input->points[point_id_input].g == 30 && input->points[point_id_input].r == 30 && input->points[point_id_input].b == 30)
+    {
+      input->points.erase(input->points.begin() + point_id_input);
+      point_id_input -= 1;
     }
   }
 }
@@ -3288,6 +3330,36 @@ Map_Scan::lowTaskTwoPlugScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 }
 
 void
+Map_Scan::lowTaskThreeRailScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
+{
+  // Sets up buffer to recieve relative frame positions.
+  tf2_ros::Buffer tfBuffer(ros::Duration(2.0), true);
+  tf2_ros::TransformListener tfListener(tfBuffer);
+  
+  ihmc_msgs::NeckTrajectoryRosMessage neck_msg;
+  neck_msg.unique_id = 1;
+  std::vector<float> direction(2, 0);
+  std::vector<float> neck_pos(3, 0);
+  std::vector<float> neck_ang_vel(3, 0);
+  direction[0] = -1.0;
+  direction[1] = -0.3;
+  neck_pos[0] = 0.431 - direction[0]*0.431/(M_PI/2);
+  neck_pos[1] = direction[1];
+  neck_pos[2] = -0.431 - direction[0]*0.431/(M_PI/2);
+  neck_msg = trajectory_generation.appendTrajectoryPoint(1.0, neck_pos, neck_ang_vel, neck_msg);
+  trajectoryNeckPublisher.publish(neck_msg);
+  
+  ros::Duration(2.0).sleep();
+  
+  // Sets up buffer to recieve relative frame positions.
+  camera_scan_callback.callAvailable(ros::WallDuration());
+  // Point Cloud for map.
+  taskTwoFilter(&tfBuffer, &this->raw_scan, map);
+  overHangTaskThreeRailFilter(map);
+  GoldRemovalFilter(map);
+}
+
+void
 Map_Scan::wideTaskThreeStairScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
 {
   RedRemovalFilter(map);
@@ -3366,6 +3438,7 @@ Map_Scan::wideTaskThreeStairScan(pcl::PointCloud<pcl::PointXYZRGB>* map)
   // Point Cloud for map.
   taskThreeFilter(&tfBuffer, &this->raw_scan, map);
   YellowFilter(map);
+  overHangTaskThreeRailFilter(map);
 }
 
 void

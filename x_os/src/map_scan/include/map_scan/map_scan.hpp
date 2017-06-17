@@ -113,6 +113,8 @@ class Map_Scan
     overHangHabFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
     void
     overHangTaskThreeFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
+    void
+    overHangTaskThreeRailFilter(pcl::PointCloud<pcl::PointXYZRGB>* input);
   
   public:
     Map_Scan();
@@ -183,6 +185,8 @@ class Map_Scan
     generateHabitat(pcl::PointCloud<pcl::PointXYZRGB>* input);
     void
     lowTaskThreeScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
+    void
+    lowTaskThreeRailScan(pcl::PointCloud<pcl::PointXYZRGB>* map);
 };
 
 #endif

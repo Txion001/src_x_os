@@ -444,7 +444,7 @@ Src_Finals_Controller::executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher
     std::vector<std::vector<float>> point_list = path_generation.createPathPointHabList(tfBuffer, end_point, &map);
     pcl::toROSMsg(map, output);
     scan_output.publish(output);
-    path_generation.traversePointList(point_list, true);
+    path_generation.traversePointList(point_list, false);
     pcl::toROSMsg(map, output);
     scan_output.publish(output);
     
@@ -458,7 +458,7 @@ Src_Finals_Controller::executeAllTasks(tf2_ros::Buffer* tfBuffer, ros::Publisher
   std::vector<std::vector<float>> point_list = path_generation.createPathPointHabList(tfBuffer, table_point, &map);
   pcl::toROSMsg(map, output);
   scan_output.publish(output);
-  path_generation.traversePointList(point_list, true);
+  path_generation.traversePointList(point_list, false);
   pcl::toROSMsg(map, output);
   scan_output.publish(output);
   
